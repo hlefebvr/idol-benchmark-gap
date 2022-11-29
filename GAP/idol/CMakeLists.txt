@@ -1,2 +1,2 @@
-add_executable(idol_benchmark main.cpp)
-target_link_libraries(idol_benchmark PUBLIC idol)
+add_executable(benchmark_idol_gap main.cpp solve_with_branch_and_price.h write_to_file.h solve_with_glpk.h solve_with_branch_and_bound.h)
+target_link_libraries(benchmark_idol_gap PUBLIC idol)

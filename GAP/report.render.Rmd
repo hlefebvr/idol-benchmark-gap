@@ -1,0 +1,34 @@
+---
+title: Generalized Assignment Problem
+---
+
+```{r}
+results = read.csv("../results_GAP_idol.csv", header = FALSE)
+colnames(results) = c("instance", "approach", "n_knapsacks", "n_items", "obj", "time")
+```
+
+```{r}
+approaches = unique(results$approach)
+```
+
+```{r}
+library(tidyr)
+times = spread(results[,-5], key = approach, value = time)
+```
+
+```{r echo = FALSE}
+library(rmarkdown)
+paged_table(times)
+```
+
+```{r}
+times$time.best = apply(times[,-c(1:3)], 1, FUN = min)
+ratios = times[,c(4:5)] / times$time.best
+colnames(ratios) = paste0(approaches, ".ratio")
+times = cbind(times, ratios)
+paged_table(times)
+```
+
+```{r}
+
+```
