@@ -1,17 +1,18 @@
 cmake_minimum_required(VERSION 3.23)
 project(idol_benchmark)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
+
+set(USE_GLPK YES)
 
 include(FetchContent)
 
 FetchContent_Declare(
         idol
         GIT_REPOSITORY https://github.com/hlefebvr/idol.git
-        GIT_TAG        main
+        GIT_TAG        origin/dev
 )
 
 FetchContent_MakeAvailable(idol)
 
-add_executable(idol_benchmark main.cpp)
-target_link_libraries(idol_benchmark PUBLIC idol)
+add_subdirectory(GAP)
