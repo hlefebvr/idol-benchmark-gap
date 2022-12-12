@@ -56,7 +56,7 @@ void solve_with_branch_and_price(const std::string& t_path_to_instance) {
     auto solver = branch_and_price<
             Solvers::GLPK,
             Solvers::GLPK
-    >(restricted_master_problem, alphas, subproblems, branching_candidates);
+    >(restricted_master_problem, alphas.begin(), alphas.end(), subproblems.begin(), subproblems.end(), branching_candidates);
     solver.add_callback<Callbacks::RoundingHeuristic>(branching_candidates);
     solver.set(Param::Algorithm::TimeLimit, TIME_LIMIT);
     solver.solve();

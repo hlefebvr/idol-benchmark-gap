@@ -15,7 +15,7 @@ int main(int t_argc, const char** t_argv) {
 
     solve_with_glpk(path_to_instance);
     solve_with_branch_and_bound(path_to_instance);
-    //solve_with_branch_and_price(path_to_instance);
+    solve_with_branch_and_price(path_to_instance);
 
     return 0;
 }
