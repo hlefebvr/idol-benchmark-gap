@@ -43,7 +43,7 @@ jobs:
     - name: Install kableExtra
       run: R -e "install.packages(\"kableExtra\")"
     - name: Install tidyr
-      run: R -e "install.packages(\"tidyr\")""
+      run: R -e "install.packages(\"tidyr\")"
 
     - name: Solve instances
       run: ./run.sh
