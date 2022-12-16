@@ -1,4 +1,4 @@
-BUILD_DIRECTORY=cmake-build-debug
+BUILD_DIRECTORY=./cmake-build-debug
 INSTANCES=GAP/data/dummies
 
 for FILE in $INSTANCES/*
