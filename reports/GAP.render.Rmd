@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
-time_limit = 30
+time_limit = 5 * 60
 
 results = read.csv("../results_GAP_idol.csv", header = FALSE)
 colnames(results) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")

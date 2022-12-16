@@ -120,7 +120,7 @@ end
 foreach(all_instances) do file
 
     instance = Instance(instance_folder * "/" * file)
-    model = make_model(instance, 30)
+    model = make_model(instance, 5 * 60)
 
     try
         optimize!(model)

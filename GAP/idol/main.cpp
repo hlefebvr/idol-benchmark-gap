@@ -11,7 +11,7 @@ int main(int t_argc, const char** t_argv) {
         throw std::runtime_error("Expected argument 1: path_to_instance");
     }
 
-    constexpr double time_limit = 30;
+    constexpr double time_limit = 5 * 60;
     const std::string path_to_instance = t_argv[1];
 
     Logs::set_level<BranchAndBound>(Info);
