@@ -130,7 +130,7 @@ performance_profile(results, xlim = c(1, 200))
 Comparing the external solver with branch-and-bound and branch-and-price with specific settings.
 
 ```{r}
-performance_profile(results[results$solver_with_params %in% c("external_solver", "idol_bab_h1", "idol_bap_h1_s30_f0_c500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, BaB and BaP")
+performance_profile(results[results$solver_with_params %in% c("external_solver", "idol_bab_h1", "idol_bap_h1_s30_f0_c500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, BaB and BaP")
 ```
 
 ### Branch and bound

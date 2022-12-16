@@ -57,7 +57,6 @@ function make_model(instance::Instance, time_limit::Int)
                                             cleanup_threshold = 500
                                         )
                     ],
-                    primal_heuristics = Coluna.Algorithm.ParameterizedHeuristic[],
                     max_nb_cut_rounds = 0
                 ),
                 timelimit = time_limit
@@ -103,7 +102,7 @@ function write_output(file::String, status::String, objective::String, time::Str
         write(output,
             instance_folder * "/" * file * ","
             * "coluna,"
-            * "0," # with heuristic
+            * "1," # with heuristic
             * "0," # smoothing
             * "0," # farkas
             * "500," # cleanup
