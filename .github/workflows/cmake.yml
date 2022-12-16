@@ -26,16 +26,19 @@ jobs:
     - uses: julia-actions/setup-julia@latest
 
     - name: Install JuMP and coluna
-      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+
+    - name: Solve instances with coluna
+      run: ./run_coluna.sh ./GAP/data/small
 
     - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: cmake -B ${{github.workspace}}/cmake-build-debug -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
-      # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
+
+    - name: Solve instances with idol
+      run: ./run_idol.sh ./GAP/data/small
       
       # Install all R markdown dependecies
     - name: Install dependencies of kableExtra
@@ -49,12 +52,6 @@ jobs:
       run: R -e "install.packages(\"kableExtra\")"
     - name: Install tidyr
       run: R -e "install.packages(\"tidyr\")"
-
-    - name: Solve instances with idol
-      run: ./run_idol.sh ./GAP/data/small
-
-    - name: Solve instances with coluna
-      run: ./run_coluna.sh ./GAP/data/small
       
     - name: Render report
       run: ./build.sh
