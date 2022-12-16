@@ -123,7 +123,6 @@ performance_profile = function (dataset, color = NULL, xlim = NULL, main = "Perf
 Comparing all the solvers.
 
 ```{r}
-results[,c("instance", "solver_with_params", "time")]
 performance_profile(results, xlim = c(1, 200))
 ```
 #### With specified settings
