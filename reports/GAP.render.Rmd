@@ -29,6 +29,14 @@ results[results$solver == "external_solver",]$solver_with_params = "external_sol
 results[results$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", results[results$solver == "idol_bab",]$with_heuristics)
 ```
 
+```{r}
+coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
+colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
+coluna$solver_with_params = "coluna"
+
+results = rbind(results, coluna)
+```
+
 ```{r echo = FALSE}
 paged_table(results)
 ```
@@ -115,6 +123,7 @@ performance_profile = function (dataset, color = NULL, xlim = NULL, main = "Perf
 Comparing all the solvers.
 
 ```{r}
+results[,c("instance", "solver_with_params", "time")]
 performance_profile(results, xlim = c(1, 200))
 ```
 #### With specified settings
@@ -122,7 +131,7 @@ performance_profile(results, xlim = c(1, 200))
 Comparing the external solver with branch-and-bound and branch-and-price with specific settings.
 
 ```{r}
-performance_profile(results[results$solver_with_params %in% c("external_solver", "idol_bab_h1", "idol_bap_h1_s30_f0_c500_m1"),], xlim = c(1, 200), main = "External solver, BaB and BaP")
+performance_profile(results[results$solver_with_params %in% c("external_solver", "idol_bab_h1", "idol_bap_h1_s30_f0_c500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, BaB and BaP")
 ```
 
 ### Branch and bound
@@ -135,6 +144,12 @@ performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 3), main
 
 
 ### Branch and price
+
+#### With coluna
+
+```{r}
+performance_profile(results[results$solver != "external_solver" & results$solver != "idol_bab",], xlim = c(1, 10), main = "idol versus coluna")
+```
 
 #### Branching on master versus branching on pricing
 

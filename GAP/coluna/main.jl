@@ -50,15 +50,17 @@ function make_model(instance::Instance)
         "params" => Coluna.Params(
             solver = Coluna.Algorithm.TreeSearchAlgorithm(
                 conqueralg = Coluna.ColCutGenConquer(
-                    stages = Coluna.ColumnGeneration[
-                            Coluna.ColumnGeneration(
-                            smoothing_stabilization = 0.0,
-                            log_print_frequency = 0,
-                        )
+                            stages = Coluna.ColumnGeneration[
+                                        Coluna.ColumnGeneration(
+                                            smoothing_stabilization = 0.0,
+                                            log_print_frequency = 0,
+                                            cleanup_threshold = 500
+                                        )
                     ],
                     primal_heuristics = Coluna.Algorithm.ParameterizedHeuristic[],
                     max_nb_cut_rounds = 0
-                )
+                ),
+                timelimit = 30
             )
         ),
         "default_optimizer" => GLPK.Optimizer # GLPK for the master & the subproblems
@@ -104,25 +106,20 @@ foreach(all_instances) do file
 
     open("results_GAP_coluna.csv", "a+") do output
         write(output,
-            file * ","
+            instance_folder * "/" * file * ","
             * "coluna,"
             * "1," # with heuristic
             * "0," # smoothing
             * "0," # farkas
             * "500," # cleanup
             * "1," # branching on master
+            * string(termination_status(model)) * ","
+            * ","
             * string(length(instance.M)) * ","
             * string(length(instance.J)) * ","
-            * "skipped,"
-            * "skipped,"
             * string(objective_value(model)) * ","
             * string(solve_time(model))
             * "\n")
     end;
 
 end
-
-
-# Actually solving
-
-optimize!(model)

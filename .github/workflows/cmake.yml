@@ -50,8 +50,11 @@ jobs:
     - name: Install tidyr
       run: R -e "install.packages(\"tidyr\")"
 
-    - name: Solve instances
-      run: ./run.sh ./GAP/data/small
+    - name: Solve instances with idol
+      run: ./run_idol.sh ./GAP/data/small
+
+    - name: Solve instances with coluna
+      run: ./run_coluna.sh ./GAP/data/small
       
     - name: Render report
       run: ./build.sh
