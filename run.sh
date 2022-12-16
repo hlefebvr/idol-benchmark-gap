@@ -6,12 +6,12 @@ fi
 BUILD_DIRECTORY=./cmake-build-debug
 INSTANCES=$1
 
+echo "Solving using coluna"
+julia GAP/coluna/main.jl glk $INSTANCES
+
 echo "Solving using idol"
 for FILE in $INSTANCES/*
 do
   echo "$(date) ${FILE}" >> history.log
   $BUILD_DIRECTORY/GAP/idol/benchmark_idol_gap $FILE >> history.log 2>&1
 done
-
-echo "Solving using coluna"
-julia GAP/coluna/main.jl glk $INSTANCES
