@@ -10,22 +10,22 @@
 
 using namespace Problems::GAP;
 
-void solve_with_glpk(const std::string& t_path_to_instance, double t_time_limit) {
+void solve_with_external_solver(const std::string& t_path_to_instance, double t_time_limit) {
 
-    std::cout << "solve_with_glpk with time_limit = " << t_time_limit << std::endl;
+    std::cout << "solve_with_external_solver with time_limit = " << t_time_limit << std::endl;
 
     const auto instance = Problems::GAP::read_instance(t_path_to_instance);
 
     auto [model, x, complicating_constraints] = make_model(instance);
 
-    Solvers::GLPK solver(model);
+    SOLVER solver(model);
     solver.set(Param::Algorithm::TimeLimit, t_time_limit);
     solver.solve();
 
     write_to_file(
             t_path_to_instance,
             instance,
-            "glpk",
+            "external_solver",
             false,
             0.,
             false,

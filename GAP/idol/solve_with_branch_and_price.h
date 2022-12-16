@@ -51,11 +51,11 @@ void solve_with_branch_and_price(const std::string& t_path_to_instance,
     dantzig_wolfe.set(Param::DantzigWolfe::FarkasPricing, t_farkas_pricing);
     dantzig_wolfe.set(Param::DantzigWolfe::LogFrequency, 1);
 
-    auto& master = dantzig_wolfe.set_master_solution_strategy<Solvers::GLPK>();
+    auto& master = dantzig_wolfe.set_master_solution_strategy<SOLVER>();
     master.set(Param::Algorithm::InfeasibleOrUnboundedInfo, true);
 
     for (unsigned int i = 1, n = dantzig_wolfe.reformulation().subproblems().size() ; i <= n ; ++i) {
-        dantzig_wolfe.subproblem(i).set_exact_solution_strategy<Solvers::GLPK>();
+        dantzig_wolfe.subproblem(i).set_exact_solution_strategy<SOLVER>();
         if (t_branching_on_master) {
             dantzig_wolfe.subproblem(i).set_branching_manager<BranchingManagers::OnMaster>();
         } else {

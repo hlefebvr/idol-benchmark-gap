@@ -45,6 +45,7 @@ void write_to_file(
          << t_time
          << '\n';
 
+    file.close();
 }
 
 #endif //IDOL_BENCHMARK_WRITE_TO_FILE_H
