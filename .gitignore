@@ -7,3 +7,4 @@ cmake-*
 *.render.html
 *.log
 *.csv
+!reports/*.log
