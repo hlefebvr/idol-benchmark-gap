@@ -98,7 +98,7 @@ println("Switching to test bed...")
 
 foreach(all_instances) do file
 
-    instance = Instance(file)
+    instance = Instance(instance_folder * "/" * file)
     model = make_model(instance)
     optimize!(model)
 
@@ -116,7 +116,7 @@ foreach(all_instances) do file
             * "skipped,"
             * "skipped,"
             * string(objective_value(model)) * ","
-            * string(solve_time(model)) * ","
+            * string(solve_time(model))
             * "\n")
     end;
 

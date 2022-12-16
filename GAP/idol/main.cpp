@@ -15,7 +15,7 @@ int main(int t_argc, const char** t_argv) {
     const std::string path_to_instance = t_argv[1];
 
     Logs::set_level<BranchAndBound>(Info);
-    Logs::set_level<DantzigWolfe>(Debug);
+    Logs::set_level<DantzigWolfe>(Info);
 
     solve_with_external_solver(path_to_instance, time_limit);
     solve_with_branch_and_bound(path_to_instance, time_limit, false);
