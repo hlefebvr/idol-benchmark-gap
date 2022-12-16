@@ -18,9 +18,6 @@ int main(int t_argc, const char** t_argv) {
             { 3, 30 },
             { 3, 40 },
             { 3, 50 },
-            { 3, 60 },
-            { 4, 40 },
-            { 4, 50 },
     };
 
     for (const auto& [n_agents, n_jobs] : sizes) {

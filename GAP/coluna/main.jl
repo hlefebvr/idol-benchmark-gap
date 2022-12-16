@@ -1,6 +1,20 @@
-using JuMP, GLPK;
+using JuMP;
 using BlockDecomposition, Coluna;
 using DelimitedFiles;
+
+if (length(ARGS) != 2)
+    throw(ArgumentError("Expected argument \"solver\" \"instance_folder\""))
+end
+
+if (ARGS[1] == "glpk")
+    using GLPK;
+elseif (ARGS[1] == "gurobi")
+    using Gurobi;
+else
+    throw(ErrorException("Allowed values for parameter 1: glpk, gurobi"));
+end
+
+instance_folder = ARGS[2]
 
 struct Instance
 
@@ -70,19 +84,45 @@ function make_model(instance::Instance)
 
 end
 
-instance = Instance("/home/henri/CLionProjects/idol_benchmark/GAP/data/generated/instance_n3_50__3.txt")
-model = make_model(instance)
+all_instances = readdir(instance_folder)
 
-# Solving once as warm up
+
+println("Solving an easy problem to warm up...")
+
+warmup_instance = instance_folder * "/" * all_instances[1]
+instance = Instance(warmup_instance)
+model = make_model(instance)
 optimize!(model)
+
+println("Switching to test bed...")
+
+foreach(all_instances) do file
+
+    instance = Instance(file)
+    model = make_model(instance)
+    optimize!(model)
+
+    open("results_GAP_coluna.csv", "a+") do output
+        write(output,
+            file * ","
+            * "coluna,"
+            * "1," # with heuristic
+            * "0," # smoothing
+            * "0," # farkas
+            * "500," # cleanup
+            * "1," # branching on master
+            * string(length(instance.M)) * ","
+            * string(length(instance.J)) * ","
+            * "skipped,"
+            * "skipped,"
+            * string(objective_value(model)) * ","
+            * string(solve_time(model)) * ","
+            * "\n")
+    end;
+
+end
 
 
 # Actually solving
 
 optimize!(model)
-
-solution_summary(model, verbose=true)
-
-println( solve_time(model) )
-println( objective_value(model) )
-
