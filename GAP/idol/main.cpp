@@ -18,12 +18,24 @@ int main(int t_argc, const char** t_argv) {
     Logs::set_level<DantzigWolfe>(Debug);
 
     solve_with_external_solver(path_to_instance, time_limit);
+    solve_with_branch_and_bound(path_to_instance, time_limit, false);
+    solve_with_branch_and_bound(path_to_instance, time_limit, true);
 
-    for (const auto with_heuristics : { true, false }) {
-        solve_with_branch_and_bound(path_to_instance, time_limit, with_heuristics);
-    }
+    const int clean_up = 500;
 
-    for (const bool branchin_on_master : { true, false }) {
+    // Branching on master versus on pricing
+    solve_with_branch_and_price(path_to_instance, time_limit, true, 0., false, clean_up, true);
+    solve_with_branch_and_price(path_to_instance, time_limit, true, 0., false, clean_up, false);
+
+    // Artificial variables versus farkas pricing
+    solve_with_branch_and_price(path_to_instance, time_limit, true, 0., true, clean_up, true);
+
+    // Smoothing factor
+    solve_with_branch_and_price(path_to_instance, time_limit, true, .3, false, clean_up, true);
+    solve_with_branch_and_price(path_to_instance, time_limit, true, .8, false, clean_up, true);
+
+    /*
+    for (const bool branching_on_master : {true, false }) {
         for (const bool with_heuristics: {true, false}) {
             for (const bool farkas_pricing: {false, true}) {
                 for (const double smoothing_factor: {0., .3, .8}) {
@@ -34,13 +46,14 @@ int main(int t_argc, const char** t_argv) {
                                                     smoothing_factor,
                                                     farkas_pricing,
                                                     clean_up,
-                                                    branchin_on_master);
+                                                    branching_on_master);
                     }
 
                 }
             }
         }
     }
+     */
 
     return 0;
 }
