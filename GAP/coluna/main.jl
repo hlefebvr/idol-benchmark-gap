@@ -43,7 +43,7 @@ struct Instance
 
 end
 
-function make_model(instance::Instance)
+function make_model(instance::Instance, time_limit::Int)
 
     coluna = optimizer_with_attributes(
         Coluna.Optimizer,
@@ -60,7 +60,7 @@ function make_model(instance::Instance)
                     primal_heuristics = Coluna.Algorithm.ParameterizedHeuristic[],
                     max_nb_cut_rounds = 0
                 ),
-                timelimit = 30
+                timelimit = time_limit
             )
         ),
         "default_optimizer" => GLPK.Optimizer # GLPK for the master & the subproblems
@@ -93,33 +93,53 @@ println("Solving an easy problem to warm up...")
 
 warmup_instance = instance_folder * "/" * all_instances[1]
 instance = Instance(warmup_instance)
-model = make_model(instance)
+model = make_model(instance, 3600)
 optimize!(model)
 
 println("Switching to test bed...")
 
-foreach(all_instances) do file
-
-    instance = Instance(instance_folder * "/" * file)
-    model = make_model(instance)
-    optimize!(model)
-
+function write_output(file::String, status::String, objective::String, time::String)
     open("results_GAP_coluna.csv", "a+") do output
         write(output,
             instance_folder * "/" * file * ","
             * "coluna,"
-            * "1," # with heuristic
+            * "0," # with heuristic
             * "0," # smoothing
             * "0," # farkas
             * "500," # cleanup
             * "1," # branching on master
-            * string(termination_status(model)) * ","
+            * status * ","
             * ","
             * string(length(instance.M)) * ","
             * string(length(instance.J)) * ","
-            * string(objective_value(model)) * ","
-            * string(solve_time(model))
+            * objective * ","
+            * time
             * "\n")
     end;
+end
+
+foreach(all_instances) do file
+
+    instance = Instance(instance_folder * "/" * file)
+    model = make_model(instance, 30)
+
+    try
+        optimize!(model)
+
+        write_output(
+            file,
+            string(termination_status(model)),
+            string(objective_value(model)),
+            string(solve_time(model))
+        )
+
+    catch (error)
+        write_output(
+            file,
+            "ERROR",
+            "0",
+            "999999999999"
+        )
+    end
 
 end
