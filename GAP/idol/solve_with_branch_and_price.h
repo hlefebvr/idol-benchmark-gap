@@ -6,67 +6,82 @@
 #define IDOL_BENCHMARK_SOLVE_WITH_BRANCH_AND_PRICE_H
 
 #include "write_to_file.h"
-#include "modeling.h"
-#include "algorithms.h"
-#include "problems/GAP/GAP_Instance.h"
+#include "make_model.h"
 #include "algorithms/callbacks/Callbacks_RoundingHeuristic.h"
+#include "algorithms/dantzig-wolfe/DantzigWolfe.h"
+#include "algorithms/dantzig-wolfe/BranchingManagers_OnMaster.h"
+#include "algorithms/dantzig-wolfe/BranchingManagers_OnPricing.h"
+#include "algorithms.h"
 
 using namespace Problems::GAP;
 
-void solve_with_branch_and_price(const std::string& t_path_to_instance) {
+void solve_with_branch_and_price(const std::string& t_path_to_instance,
+                                 double t_time_limit,
+                                 bool t_with_heuristics,
+                                 double t_smoothing_factor,
+                                 bool t_farkas_pricing,
+                                 int t_clean_up,
+                                 bool t_branching_on_master) {
 
-    const auto instance = read_instance(t_path_to_instance);
+    std::cout << "solve_with_branch_and_price with time_limit = " << t_time_limit
+              << ", with_heuristics = " << t_with_heuristics
+              << ", smoothing_factor = " << t_smoothing_factor
+              << ", farkas_pricing = " << t_farkas_pricing
+              << ", clean_up = " << t_clean_up
+              << ", branching_on_master = " << t_branching_on_master
+              << std::endl;
 
-    const unsigned int n_knapsacks = instance.n_knapsacks();
-    const unsigned int n_items = instance.n_items();
+    const auto instance = Problems::GAP::read_instance(t_path_to_instance);
 
-    // Create sub problems
-    std::vector<Model> subproblems(n_knapsacks);
-    std::vector<Vector<Var>> x(n_knapsacks);
+    auto [model, x, complicating_constraints] = make_model(instance);
 
-    for (unsigned int k = 0 ; k < n_knapsacks ; ++k) {
-        x[k] = subproblems[k].add_vars(Dim<1>(n_items), 0., 1., Continuous, 0.);
-        subproblems[k].add_ctr(idol_Sum(j, Range(n_items), instance.w(k, j) * x[k][j]) <= instance.t(k));
-    }
+    const auto branching_candidates = flatten<Var, 2>(x);
 
-    // Create restricted master problem
-    Model restricted_master_problem;
-    auto alphas = restricted_master_problem.add_vars(Dim<1>(n_knapsacks), 0., 1., Continuous, 0.);
+    BranchAndBound solver;
 
-    for (unsigned int k = 0 ; k < n_knapsacks ; ++k) {
-        Constant objective = idol_Sum(j, Range(n_items), instance.p(k, j) * !x[k][j]).constant();
-        restricted_master_problem.set(Attr::Var::Obj, alphas[k], std::move(objective));
-        restricted_master_problem.add_ctr(alphas[k] == 1);
-    }
-    for (unsigned int j = 0 ; j < n_items ; ++j) {
-        restricted_master_problem.add_ctr(idol_Sum(k, Range(n_knapsacks), !x[k][j] * alphas[k]) == 1);
-    }
+    auto& node_strategy = solver.set_node_strategy<NodeStrategies::Basic<Nodes::Basic>>();
+    node_strategy.set_active_node_manager_strategy<ActiveNodesManagers::Basic>();
+    node_strategy.set_branching_strategy<BranchingStrategies::MostInfeasible>( branching_candidates );
+    node_strategy.set_node_updator_strategy<NodeUpdators::ByBoundVar>();
 
-    // Create branching candidates
-    std::vector<Var> branching_candidates;
-    branching_candidates.reserve(n_knapsacks * n_items);
+    auto& dantzig_wolfe = solver.set_solution_strategy<DantzigWolfe>(model, complicating_constraints);
 
-    for (unsigned int k = 0 ; k < n_knapsacks ; ++k) {
-        for (unsigned int j = 0 ; j < n_items ; ++j) {
-            branching_candidates.emplace_back(x[k][j]);
+    dantzig_wolfe.set(Param::DantzigWolfe::CleanUpThreshold, t_clean_up);
+    dantzig_wolfe.set(Param::DantzigWolfe::SmoothingFactor, t_smoothing_factor);
+    dantzig_wolfe.set(Param::DantzigWolfe::FarkasPricing, t_farkas_pricing);
+    dantzig_wolfe.set(Param::DantzigWolfe::LogFrequency, 1);
+
+    auto& master = dantzig_wolfe.set_master_solution_strategy<Solvers::GLPK>();
+    master.set(Param::Algorithm::InfeasibleOrUnboundedInfo, true);
+
+    for (unsigned int i = 1, n = dantzig_wolfe.reformulation().subproblems().size() ; i <= n ; ++i) {
+        dantzig_wolfe.subproblem(i).set_exact_solution_strategy<Solvers::GLPK>();
+        if (t_branching_on_master) {
+            dantzig_wolfe.subproblem(i).set_branching_manager<BranchingManagers::OnMaster>();
+        } else {
+            dantzig_wolfe.subproblem(i).set_branching_manager<BranchingManagers::OnPricing>();
         }
     }
 
-    // Create solver
-    auto solver = branch_and_price<
-            Solvers::GLPK,
-            Solvers::GLPK
-    >(restricted_master_problem, alphas.begin(), alphas.end(), subproblems.begin(), subproblems.end(), branching_candidates);
-    solver.add_callback<Callbacks::RoundingHeuristic>(branching_candidates);
-    solver.set(Param::Algorithm::TimeLimit, TIME_LIMIT);
+    if (t_with_heuristics) {
+        solver.add_callback<Callbacks::RoundingHeuristic>(branching_candidates);
+    }
+    solver.set(Param::Algorithm::TimeLimit, t_time_limit);
+
     solver.solve();
 
     write_to_file(
             t_path_to_instance,
+            instance,
             "idol_bap",
-            n_knapsacks,
-            n_items,
-            solver.primal_solution().objective_value(),
+            t_with_heuristics,
+            t_smoothing_factor,
+            t_farkas_pricing,
+            t_clean_up,
+            t_branching_on_master,
+            solver.status(),
+            solver.reason(),
+            solver.get(Attr::Solution::ObjVal),
             solver.time().count()
     );
 }

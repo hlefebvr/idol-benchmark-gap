@@ -1,1 +1,2 @@
 add_subdirectory(idol)
+add_subdirectory(instance_generator)

@@ -1,5 +1,6 @@
 using JuMP, GLPK;
 using BlockDecomposition, Coluna;
+using DelimitedFiles;
 
 struct Instance
 
@@ -9,13 +10,18 @@ struct Instance
     w::Matrix{Float64}
     Q::Vector{Float64}
 
-   function Instance()
+   function Instance(t_filename::String)
 
-    M = 1:3;
-    J = 1:15;
-    c = [12.7 22.5 8.9 20.8 13.6 12.4 24.8 19.1 11.5 17.4 24.7 6.8 21.7 14.3 10.5; 19.1 24.8 24.4 23.6 16.1 20.6 15.0 9.5 7.9 11.3 22.6 8.0 21.5 14.7 23.2;  18.6 14.1 22.7 9.9 24.2 24.5 20.8 12.9 17.7 11.9 18.7 10.1 9.1 8.9 7.7];
-    w = [61 70 57 82 51 74 98 64 86 80 69 79 60 76 78; 50 57 61 83 81 79 63 99 82 59 83 91 59 99 91;91 81 66 63 59 81 87 90 65 55 57 68 92 91 86];
-    Q = [1020, 1460, 1530];
+   data = readdlm(t_filename)
+
+    n_agents = data[1,1]
+    n_jobs = data[1,2]
+
+    M = 1:n_agents;
+    J = 1:n_jobs;
+    c = data[2:(n_agents+1),1:n_jobs];
+    w = data[(2+n_agents):(1+n_agents+n_agents), 1:n_jobs];
+    Q = data[(2+n_agents+n_agents), 1:n_agents];
 
     new(M, J, c, w, Q)
 
@@ -64,7 +70,7 @@ function make_model(instance::Instance)
 
 end
 
-instance = Instance()
+instance = Instance("/home/henri/CLionProjects/idol_benchmark/GAP/data/generated/instance_n3_50__3.txt")
 model = make_model(instance)
 
 # Solving once as warm up
@@ -74,6 +80,8 @@ optimize!(model)
 # Actually solving
 
 optimize!(model)
+
+solution_summary(model, verbose=true)
 
 println( solve_time(model) )
 println( objective_value(model) )

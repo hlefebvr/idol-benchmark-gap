@@ -5,3 +5,5 @@ cmake-*
 .RData
 .Rhistory
 *.render.html
+*.log
+*.csv

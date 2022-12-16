@@ -1,0 +1,2 @@
+add_executable(generate_GAP generate_main.cpp)
+target_link_libraries(generate_GAP PUBLIC idol)
