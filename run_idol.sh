@@ -1,5 +1,5 @@
-if [ "$#" -ne 5 ] || ! [ -d "$1" ]; then
-  echo "One argument required: path_to_instances"
+if [ "$#" -ne 6 ] || ! [ -d "$1" ]; then
+  echo "5 arguments required, given ${#}, i.e., ${@}."
   exit
 fi
 
