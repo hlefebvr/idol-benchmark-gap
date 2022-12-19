@@ -55,6 +55,12 @@ jobs:
       
     - name: Render report
       run: ./build.sh
+
+    - name: Copy results from idol to reports
+      run: cp results_GAP_idol.csv reports/
+
+    - name: Copy results from coluna to reports
+      run: cp results_GAP_coluna.csv reports/
       
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3

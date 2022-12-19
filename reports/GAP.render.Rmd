@@ -5,7 +5,7 @@ title: Generalized Assignment Problem
 ## About
 
 This page contains an automatic benchmark between the C++ library [idol](https://github.com/hlefebvr/idol) and the Julia package [coluna.jl](https://github.com/atoptima/Coluna.jl)
-to test their implementation of the Branch-and-Price algorithm for solving instances of the [Generalized Assignment Problem](https://en.wikipedia.org/wiki/Generalized_assignment_problem).
+to test their implementation of the [Branch-and-Price algorithm](https://en.wikipedia.org/wiki/Branch_and_price) for solving instances of the [Generalized Assignment Problem](https://en.wikipedia.org/wiki/Generalized_assignment_problem).
 
 The results presented here are automatically generated using GitHub Actions and R with Rmarkdown. Note that the experiments themselves were run on GitHub Actions for which the code
 is fully public and can be found [here for implementation details](https://github.com/hlefebvr/idol_benchmark) and [here for GitHub Actions configuration](https://github.com/hlefebvr/idol_benchmark/blob/main/.github/workflows/new_workflow.yml).
@@ -24,40 +24,75 @@ knitr::opts_chunk$set(
 
 ```
 
-## Problem definition
+## Mathematical models
+
+### Direct model
 
 Let $m$ be a given of agents and let $n$ be a set of tasks to perform. Let $c_{ij}$ be the cost of assigning task $j$ to agent $i$, $w_{ij}$ be the resource consumption of task $j$ when performed by agent $i$ and let $t_i$ be the resource capacity of agent $i$. The Generalized Assignment Problem (GAP) can be modeled as
 
 $$
-  \begin{array}{ll}
+  \begin{array}{lll}
     \textrm{minimize } & \displaystyle \sum_{i=1}^m \sum_{j=1}^n c_{ij} x_{ij} \\
     \textrm{subject to } & \displaystyle \sum_{j=1}^n w_{ij}x_{ij} \le t_{i} & i=1,...,m \\
     & \displaystyle \sum_{i=1}^m x_{ij} = 1 & j = 1,...,n \\
-    & x_{ij} \in \{ 0,1 \}.^
+    & x_{ij} \in \{ 0,1 \}.
   \end{array}
 $$
-Here, variable $x_{ij}$ encode the assignment decision and equals $1$ if and only if task $j$ is assigned to agent $i$.
+Here, variable $x_{ij}$ encodes the assignment decision and equals $1$ if and only if task $j$ is assigned to agent $i$.
+
+### Dantzig-Wolfe reformulation
+
+Let us enumerate the list of all feasible assignments, i.e., let $\{ \bar{\mathrm{x}}_{ij}^e \}_{e\in E} = \{ x\in\{ 0, 1 \}^{mn} | \sum_{j=1}^n w_{ij}x_{ij} \le t_i \quad i = 1,...,m \}$ where $E$ denotes a list for their indices. The [Dantzig-Wolfe reformulation](https://en.wikipedia.org/wiki/Dantzig%E2%80%93Wolfe_decomposition) of GAP reads
+
+$$
+  \begin{array}{lll}
+    \textrm{minimize } & \displaystyle \sum_{e\in E} \alpha_e \left( \sum_{i=1}^m\sum_{j=1}^n c_{ij}\bar{\mathrm{x}}_{ij}^e \right) \\
+    \textrm{subject to } & \displaystyle \sum_{i=1}^m \alpha_e\bar{\mathrm{x}}_{ij}^e = 1 & j=1,...,n \\
+    & \displaystyle \sum_{e\in E} \alpha_e = 1 \\
+    & \alpha_e \ge 0
+  \end{array}
+$$
+
+Though this model contains an exponential number of variables (i.e., columns) it can still be solved efficiently using [Column Generation](https://en.wikipedia.org/wiki/Column_generation) and [Branch and price](https://en.wikipedia.org/wiki/Branch_and_price). In such case, the pricing problem is a [Knapsack Problem](https://en.wikipedia.org/wiki/Knapsack_problem).
 
 ## Reading instances
 
-We first start to read results obtained using idol, which can be found inside the `results_GAP_idol.csv` file.
+In this section, we start by reading the raw computational results stored in CSV files. Note that these CSV files is stored as an *artifact* on the [GitHub Actions of the hlefebvr/idol_benchmark repository](https://github.com/hlefebvr/idol_benchmark/actions) and can be downloaded without restrictions by clicking on the latest workflow execution named `new_workflow` under the section "Artifacts" (also note that artifacts have a life span of 90 days).
+
+### Results obtained with Idol
+
+We first start to read results obtained using idol, which can be found inside the `results_GAP_idol.csv` file (Note that this file can be obtained by running `cat results_GAP_idol__*.csv > results_GAP_idol.csv` after having extracted the `.zip` the artifact).
 
 ```{r}
-time_limit = 5 * 60
-
-results = read.csv("../results_GAP_idol.csv", header = FALSE)
-colnames(results) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
-
-results[results$solver == "external_solver",]$with_heuristics = NA
-results[results$solver == "external_solver" | results$solver == "idol_bab",]$smoothing_factor = NA
-results[results$solver == "external_solver" | results$solver == "idol_bab",]$farkas_pricing = NA
-results[results$solver == "external_solver" | results$solver == "idol_bab",]$clean_up_threshold = NA
-results[results$solver == "external_solver" | results$solver == "idol_bab",]$branching_on_master = NA
-
-results$solver_with_params = paste0(results$solver, "_h", results$with_heuristics, "_s", results$smoothing_factor * 100, "_f", results$farkas_pricing, "_c", results$clean_up, "_m", results$branching_on_master)
-results[results$solver == "external_solver",]$solver_with_params = "external_solver"
-results[results$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", results[results$solver == "idol_bab",]$with_heuristics)
+idol = read.csv("../results_GAP_idol.csv", header = FALSE)
+colnames(idol) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
 ```
+
+Since the "external_solver" approach (as well as the "idol_bab" approach) do not have relevant parameter values for "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold" and "branching_on_master", we set these values to `NA`.
+
+```{r}
+idol[idol$solver == "external_solver",]$with_heuristics = NA
+idol[idol$solver == "external_solver" | idol$solver == "idol_bab",]$smoothing_factor = NA
+idol[idol$solver == "external_solver" | idol$solver == "idol_bab",]$farkas_pricing = NA
+idol[idol$solver == "external_solver" | idol$solver == "idol_bab",]$clean_up_threshold = NA
+idol[idol$solver == "external_solver" | idol$solver == "idol_bab",]$branching_on_master = NA
+```
+
+Then, we concatenate the parameter values with the method's name to obtain a unique identifier for each tested method. The unique identifier can be `external_solver`, `idol_bab_h<A>` or `idol_bap_h<A>_s<B>_f<C>_c<D>_m<E>` where
+
+- `<A>` is 1 if the algorithm uses primal heuristics, 0 otherwise ; 
+- `<B>` is the smoothing factor (when relevant) multiplied by 100 ;
+- `<C>` is 1 if Farkas pricing was used, 0 if artificial variables were used ;
+- `<D>` is the clean up threshold which was used (when the threshold is reached, up to 1/3 of the threshold columns are removed from the pool) ;
+- `<E>` is 1 branching was applied to the master problem and 0 otherwise.
+
+```{r}
+idol$solver_with_params = paste0(idol$solver, "_h", idol$with_heuristics, "_s", idol$smoothing_factor * 100, "_f", idol$farkas_pricing, "_c", idol$clean_up, "_m", idol$branching_on_master)
+idol[idol$solver == "external_solver",]$solver_with_params = "external_solver"
+idol[idol$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", idol[idol$solver == "idol_bab",]$with_heuristics)
+```
+
+### Results obtained with coluna.jl
 
 The results obtained using coluna can be found inside `results_GAP_coluna.csv`.
 
@@ -65,17 +100,21 @@ The results obtained using coluna can be found inside `results_GAP_coluna.csv`.
 coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
 colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
 coluna$solver_with_params = "coluna"
-
-results = rbind(results, coluna)
 ```
 
-We can now print out the obtained computational results for each instance for each solver.
+### All
+
+We can now combine and print out the obtained computational results for each instance for each solver.
+
+```{r}
+results = rbind(idol, coluna)
+```
 
 ```{r echo = FALSE}
 paged_table(results)
 ```
 
-The list of all tested solvers can be obtained as follows.
+The list of all tested configuration of solvers can be obtained as follows.
 
 ```{r}
 solvers = as.data.frame(unique(results$solver_with_params))
@@ -86,7 +125,15 @@ colnames(solvers) = "Solver"
 knitr::kable(solvers)
 ```
 
+Additionally, we also define the used time limit for future use.
+
+```{r}
+time_limit = 5 * 60
+```
+
 ## Performance profiles
+
+To compare the different methods, we use performance profiles as introduced in [Dolan et al. (2002)](https://link.springer.com/article/10.1007/s101070100263). The following function is used to compute and plot the performance profile of a given dataset.
 
 ```{r}
 performance_profile = function (dataset, color = NULL, xlim = NULL, main = "Performance profile") {
