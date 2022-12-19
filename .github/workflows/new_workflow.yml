@@ -27,7 +27,7 @@ jobs:
       run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
 
     - name: Solve instances with coluna
-      run: ./run_coluna.sh ./GAP/data/small
+      run: ./run_coluna.sh ./GAP/data/dummies
 
     - uses: actions/upload-artifact@v3
       with:
@@ -37,6 +37,17 @@ jobs:
   idol:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arguments:
+          - "external _ _ _ _"
+          - "bab true _ _ _"
+          - "bab false _ _ _"
+          - "bap true 0 false true"
+          - "bap true 0 false false"
+          - "bap true 0 true false"
+          - "bap true .3 false true"
+          - "bap true .8 false true"
     steps:
     - uses: actions/checkout@v3
 
@@ -50,12 +61,15 @@ jobs:
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
 
     - name: Solve instances with idol
-      run: ./run_idol.sh ./GAP/data/small
+      run: ./run_idol.sh ./GAP/data/dummies ${{ matrix.arguments }}
+
+    - name: Rename results file
+      run: mv results_GAP_idol.csv results_GAP_idol__$(uuidgen).csv
 
     - uses: actions/upload-artifact@v3
       with:
         name: results
-        path: results_GAP_idol.csv
+        path: results_GAP_idol__*.csv
 
   render:
     runs-on: ubuntu-latest
@@ -66,6 +80,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: results
+
+      - name: Collect all results from idol
+        run: cat results_GAP_idol__*.csv results_GAP_idol.csv
 
       # Install all R markdown dependecies
       - name: Install dependencies of kableExtra

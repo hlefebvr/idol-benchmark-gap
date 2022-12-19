@@ -2,6 +2,8 @@
 title: Generalized Assignment Problem
 ---
 
+*These experiments were automatically run on Github Actions with the `ubuntu-latest` virtual machine. These machine have two CPU cores (x86_64), 7 GB of RAM and 14 GB of SSD space (see [hardware specifications here](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners)).*
+
 ```{r echo = FALSE}
 library(rmarkdown)
 library(tidyr)
