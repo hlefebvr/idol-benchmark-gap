@@ -11319,3 +11319,5 @@ solve_with_branch_and_price with time_limit = 30.00, with_heuristics = 1, smooth
 [2022-12-16 19:02:13]	[info]	[DantzigWolfe] 	<Type=Master> <Iter=43> <TimT=0.29> <TimI=0.00> <Stat=Optimal> <Reas=NotSpecified> <ObjV=833.50> <NGen=2> <Lb=693.85> <Ub=833.50> <RGap=16.76> <AGap=139.65> 
 [2022-12-16 19:02:13]	[info]	[DantzigWolfe] 	<Type=Master> <Iter=44> <TimT=0.30> <TimI=0.00> <Stat=Optimal> <Reas=NotSpecified> <ObjV=833.50> <NGen=2> <Lb=753.70> <Ub=833.50> <RGap=9.57> <AGap=79.80> 
 [2022-12-16 19:02:13]	[info]	[DantzigWolfe] 	<Type=Master> <Iter=45> <TimT=0.76> <TimI=0.00> <Stat=Optimal> <Reas=NotSpecified> <ObjV=831.00> <NGen=2> <Lb=824.93> <Ub=831.00> <RGap=0.73> <AGap=6.07> 
+lun 19 dic 2022, 11:13:08, CET GAP/data/dummies/dummy external _ _ _
+solve_with_external_solver with time_limit = 300
