@@ -97,22 +97,22 @@ optimize!(model)
 
 println("Switching to test bed...")
 
-function write_output(file::String, status::String, objective::String, time::String)
+function write_output(t_file::String, t_instance::Instance, t_status::String, t_objective::String, t_time::String)
     open("results_GAP_coluna.csv", "a+") do output
         write(output,
-            instance_folder * "/" * file * ","
+            instance_folder * "/" * t_file * ","
             * "coluna,"
             * "1," # with heuristic
             * "0," # smoothing
             * "0," # farkas
             * "500," # cleanup
             * "1," # branching on master
-            * status * ","
+            * t_status * ","
             * ","
-            * string(length(instance.M)) * ","
-            * string(length(instance.J)) * ","
-            * objective * ","
-            * time
+            * string(length(t_instance.M)) * ","
+            * string(length(t_instance.J)) * ","
+            * t_objective * ","
+            * t_time
             * "\n")
     end;
 end

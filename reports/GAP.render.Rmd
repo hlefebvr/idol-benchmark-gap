@@ -14,7 +14,7 @@ This page contains an automatic benchmark between the C++ library [idol](https:/
 to test their implementation of the [Branch-and-Price algorithm](https://en.wikipedia.org/wiki/Branch_and_price) for solving instances of the [Generalized Assignment Problem](https://en.wikipedia.org/wiki/Generalized_assignment_problem).
 
 The results presented here are automatically generated using GitHub Actions and R with Rmarkdown. Note that the experiments themselves were run on GitHub Actions for which the code
-is fully public and can be found [here for implementation details](https://github.com/hlefebvr/idol_benchmark) and [here for GitHub Actions configuration](https://github.com/hlefebvr/idol_benchmark/blob/main/.github/workflows/new_workflow.yml).
+is fully public and can be found [here for implementation details](https://github.com/hlefebvr/idol_benchmark) and [here for GitHub Actions configuration](https://github.com/hlefebvr/idol_benchmark/blob/main/.github/workflows/benchmark.yml).
 
 The experiments were conducted on a GitHub-hosted runner with an `ubuntu-latest` virtual machine with two CPU cores (x86_64), 7 GB of RAM and 14 GB of SSD space (see [hardware specifications here](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners)).
 
@@ -65,6 +65,12 @@ Though this model contains an exponential number of variables (i.e., columns) it
 
 In this section, we start by reading the raw computational results stored in CSV files. Note that these CSV files is stored as an *artifact* on the [GitHub Actions of the hlefebvr/idol_benchmark repository](https://github.com/hlefebvr/idol_benchmark/actions) and can be downloaded without restrictions by clicking on the latest workflow execution named `new_workflow` under the section "Artifacts" (also note that artifacts have a life span of 90 days).
 
+
+```{r}
+time_limit = 5 * 60
+```
+
+
 ### Results obtained with Idol
 
 We first start to read results obtained using idol, which can be found inside the `results_GAP_idol.csv` file (Note that this file can be obtained by running `cat results_GAP_idol__*.csv > results_GAP_idol.csv` after having extracted the `.zip` the artifact).
@@ -104,8 +110,10 @@ The results obtained using coluna can be found inside `results_GAP_coluna.csv`.
 
 ```{r}
 coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
-colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "n_agents", "n_jobs", "status", "reason", "objective_value", "time")
+colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
 coluna$solver_with_params = "coluna"
+
+coluna[coluna$status == "ERROR",]$time = time_limit
 ```
 
 ### All
@@ -115,6 +123,7 @@ We can now combine and print out the obtained computational results for each ins
 ```{r}
 results = rbind(idol, coluna)
 ```
+
 
 ```{r echo = FALSE}
 paged_table(results)
@@ -129,12 +138,6 @@ colnames(solvers) = "Solver"
 
 ```{r echo = FALSE}
 knitr::kable(solvers)
-```
-
-Additionally, we also define the used time limit for future use.
-
-```{r}
-time_limit = 5 * 60
 ```
 
 ## Some helper functions
@@ -235,20 +238,31 @@ make_table = function (dataset) {
   
   group_by = c("solver_with_params", "n_agents", "n_jobs")
   
-  dataset = dataset[,c(group_by, "time")]
   rownames(dataset) = NULL
   
   count = aggregate(dataset$time, by = dataset[,group_by], FUN = length)
   colnames(count) = c(group_by, "count")
   
+  print(count)
+  
   unsolved = aggregate(dataset$time >= time_limit, by = dataset[,group_by], FUN = sum)
   colnames(unsolved) = c(group_by, "unsolved")
+  
+  print(unsolved)
+  
+  errors = aggregate(dataset$status == "ERROR", by = dataset[,group_by], FUN = sum)
+  colnames(errors) = c(group_by, "error")
+  
+  print(errors)
   
   solved_filter = dataset$time < time_limit
   times = aggregate(dataset[solved_filter,]$time, by = dataset[solved_filter,group_by], FUN = mean)
   colnames(times) = c(group_by, "time")
   
+  print(times)
+  
   Table = merge(count, unsolved, by = group_by)
+  Table = merge(Table, errors, by = group_by)
   Table = merge(Table, times, by = group_by)
 
   return (Table)
@@ -281,6 +295,15 @@ performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 3), main
 
 ```{r}
 performance_profile(results[results$solver != "external_solver" & results$solver != "idol_bab",], xlim = c(1, 10), main = "idol versus coluna")
+```
+
+
+```{r}
+Table = make_table(results[results$solver_with_params == "idol_bap_h1_s0_f0_c500_m1" | results$solver_with_params == "coluna",])
+```
+
+```{r echo = FALSE}
+knitr::kable(Table)
 ```
 
 #### Branching on master versus branching on pricing
