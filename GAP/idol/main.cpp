@@ -54,7 +54,7 @@ int main(int t_argc, const char** t_argv) {
     const double smoothing_factor = std::stod(t_argv[4]);
     const bool farkas_pricing = parse_bool(t_argv[5]);
     const bool branching_on_master = parse_bool(t_argv[6]);
-    const int clean_up = 500;
+    const int clean_up = 1500;
 
     solve_with_branch_and_price(path_to_instance, time_limit, with_heuristics, smoothing_factor, farkas_pricing, clean_up, branching_on_master);
 

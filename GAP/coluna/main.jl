@@ -54,7 +54,7 @@ function make_model(instance::Instance, time_limit::Int)
                                         Coluna.ColumnGeneration(
                                             smoothing_stabilization = 0.0,
                                             log_print_frequency = 0,
-                                            cleanup_threshold = 500
+                                            cleanup_threshold = 1500
                                         )
                     ],
                     max_nb_cut_rounds = 0
@@ -127,6 +127,7 @@ foreach(all_instances) do file
 
         write_output(
             file,
+            instance,
             string(termination_status(model)),
             string(objective_value(model)),
             string(solve_time(model))
