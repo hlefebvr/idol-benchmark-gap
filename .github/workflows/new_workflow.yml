@@ -45,7 +45,7 @@ jobs:
           - "bab false"
           - "bap true 0 false true"
           - "bap true 0 false false"
-          - "bap true 0 true false"
+          - "bap true 0 true true"
           - "bap true .3 false true"
           - "bap true .8 false true"
     steps:

@@ -2,7 +2,13 @@
 title: Generalized Assignment Problem
 ---
 
-*These experiments were automatically run on Github Actions with the `ubuntu-latest` virtual machine. These machine have two CPU cores (x86_64), 7 GB of RAM and 14 GB of SSD space (see [hardware specifications here](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners)).*
+## About
+
+The results presented on this page are automatically generated using GitHub Actions and R with Rmarkdown. 
+
+The experiments were conducted on a GitHub-hosted runner with an `ubuntu-latest` virtual machine with two CPU cores (x86_64), 7 GB of RAM and 14 GB of SSD space (see [hardware specifications here](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners)).
+
+Last automatic run: `r format(Sys.time(), '%d/%m/%y %H:%M:%S')`.
 
 ```{r echo = FALSE}
 library(rmarkdown)
@@ -13,6 +19,10 @@ knitr::opts_chunk$set(
 )
 
 ```
+
+## Reading instances
+
+We first start to read results obtained using idol, which can be found inside the `results_GAP_idol.csv` file.
 
 ```{r}
 time_limit = 5 * 60
@@ -31,6 +41,8 @@ results[results$solver == "external_solver",]$solver_with_params = "external_sol
 results[results$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", results[results$solver == "idol_bab",]$with_heuristics)
 ```
 
+The results obtained using coluna can be found inside `results_GAP_coluna.csv`.
+
 ```{r}
 coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
 colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
@@ -39,9 +51,13 @@ coluna$solver_with_params = "coluna"
 results = rbind(results, coluna)
 ```
 
+We can now print out the obtained computational results for each instance for each solver.
+
 ```{r echo = FALSE}
 paged_table(results)
 ```
+
+The list of all tested solvers can be obtained as follows.
 
 ```{r}
 solvers = as.data.frame(unique(results$solver_with_params))

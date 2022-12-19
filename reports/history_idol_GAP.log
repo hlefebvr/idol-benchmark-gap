@@ -11332,3 +11332,12 @@ lun 19 dic 2022, 11:32:36, CET bab/* true
 lun 19 dic 2022, 11:32:56, CET GAP/data/dummies/dummy bab true
 lun 19 dic 2022, 11:33:08, CET GAP/data/dummies/dummy bab true
 lun 19 dic 2022, 11:33:42, CET GAP/data/dummies/dummy bab true
+lun 19 dic 2022, 11:51:52, CET GAP/data/dummies/dummy external
+lun 19 dic 2022, 11:52:00, CET GAP/data/dummies/dummy bab true
+lun 19 dic 2022, 11:52:03, CET GAP/data/dummies/dummy bab false
+lun 19 dic 2022, 11:52:10, CET GAP/data/dummies/dummy bap true 0 false true
+lun 19 dic 2022, 11:52:14, CET GAP/data/dummies/dummy bap true 0 false false
+lun 19 dic 2022, 11:52:22, CET GAP/data/dummies/dummy bap true 0 true false
+lun 19 dic 2022, 11:52:29, CET GAP/data/dummies/dummy bap true .3 false false
+lun 19 dic 2022, 11:52:33, CET GAP/data/dummies/dummy bap true .3 false true
+lun 19 dic 2022, 11:52:37, CET GAP/data/dummies/dummy bap true .8 false true
