@@ -40,9 +40,9 @@ jobs:
     strategy:
       matrix:
         arguments:
-          - "external _ _ _ _"
-          - "bab true _ _ _"
-          - "bab false _ _ _"
+          - "external"
+          - "bab true"
+          - "bab false"
           - "bap true 0 false true"
           - "bap true 0 false false"
           - "bap true 0 true false"

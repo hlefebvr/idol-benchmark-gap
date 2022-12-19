@@ -11321,3 +11321,5 @@ solve_with_branch_and_price with time_limit = 30.00, with_heuristics = 1, smooth
 [2022-12-16 19:02:13]	[info]	[DantzigWolfe] 	<Type=Master> <Iter=45> <TimT=0.76> <TimI=0.00> <Stat=Optimal> <Reas=NotSpecified> <ObjV=831.00> <NGen=2> <Lb=824.93> <Ub=831.00> <RGap=0.73> <AGap=6.07> 
 lun 19 dic 2022, 11:13:08, CET GAP/data/dummies/dummy external _ _ _
 solve_with_external_solver with time_limit = 300
+lun 19 dic 2022, 11:28:56, CET GAP/data/dummies/dummy external
+solve_with_external_solver with time_limit = 300

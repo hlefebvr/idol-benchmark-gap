@@ -1,6 +1,6 @@
 if [ "$#" -ne 1 ] || ! [ -d "$1" ]; then
   echo "One argument required: path_to_instances"
-  exit
+  exit 1
 fi
 
 BUILD_DIRECTORY=./cmake-build-debug
