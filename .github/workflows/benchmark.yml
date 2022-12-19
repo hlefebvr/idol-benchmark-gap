@@ -1,4 +1,4 @@
-name: NewWorkflow
+name: Benchmark
 
 on:
   push:
