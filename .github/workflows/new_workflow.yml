@@ -82,7 +82,7 @@ jobs:
           name: results
 
       - name: Collect all results from idol
-        run: cat results_GAP_idol__*.csv results_GAP_idol.csv
+        run: cat results_GAP_idol__*.csv > results_GAP_idol.csv
 
       # Install all R markdown dependecies
       - name: Install dependencies of kableExtra
