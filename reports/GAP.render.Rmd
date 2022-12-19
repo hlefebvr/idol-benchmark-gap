@@ -1,5 +1,11 @@
 ---
 title: Generalized Assignment Problem
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_depth: 3
+    toc_float: true
 ---
 
 ## About
@@ -65,7 +71,7 @@ We first start to read results obtained using idol, which can be found inside th
 
 ```{r}
 idol = read.csv("../results_GAP_idol.csv", header = FALSE)
-colnames(idol) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
+colnames(idol) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "n_agents", "n_jobs", "status", "reason", "objective_value", "time")
 ```
 
 Since the "external_solver" approach (as well as the "idol_bab" approach) do not have relevant parameter values for "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold" and "branching_on_master", we set these values to `NA`.
@@ -98,7 +104,7 @@ The results obtained using coluna can be found inside `results_GAP_coluna.csv`.
 
 ```{r}
 coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
-colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
+colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "n_agents", "n_jobs", "status", "reason", "objective_value", "time")
 coluna$solver_with_params = "coluna"
 ```
 
@@ -131,7 +137,9 @@ Additionally, we also define the used time limit for future use.
 time_limit = 5 * 60
 ```
 
-## Performance profiles
+## Some helper functions
+
+### Performance profiles
 
 To compare the different methods, we use performance profiles as introduced in [Dolan et al. (2002)](https://link.springer.com/article/10.1007/s101070100263). The following function is used to compute and plot the performance profile of a given dataset.
 
@@ -199,31 +207,73 @@ performance_profile = function (dataset, color = NULL, xlim = NULL, main = "Perf
 }
 ```
 
-### Over all methods
-
-#### Really all
-
-Comparing all the solvers.
+For instance, the following executation will plot a performance profile over all tested methods.
 
 ```{r}
 performance_profile(results, xlim = c(1, 200))
 ```
-#### With specified settings
 
-Comparing the external solver with branch-and-bound and branch-and-price with specific settings.
+Similarly, the following will compare specific methods together (in particular, GLPK, idol's branch-and-bound, idol's branch-price-price with primal heuristics, artificial variables, branching on master with smoothing factor 0.3 and coluna).
 
 ```{r}
 performance_profile(results[results$solver_with_params %in% c("external_solver", "idol_bab_h1", "idol_bap_h1_s30_f0_c500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, BaB and BaP")
 ```
 
-### Branch and bound
+### Summary tables
 
-Comparing branch-and-bound with and without heuristics.
+We also introduce function `make_table` which builds a summary table from a given dataset where each column is defined as:
+
+- `solver_with_params` the given name of the method ;
+- `n_agents` the number of agents of the considered instances ;
+- `n_jobs` the number of jobs of the considered instances ;
+- `count` the total number of instances which were tried ;
+- `unsolved` the number of instances which could not be solved within the given time limit (i.e., within `r time_limit` seconds) ; 
+- `time` the average computation time (over the solved instances only).
+
+```{r}
+make_table = function (dataset) {
+  
+  group_by = c("solver_with_params", "n_agents", "n_jobs")
+  
+  dataset = dataset[,c(group_by, "time")]
+  rownames(dataset) = NULL
+  
+  count = aggregate(dataset$time, by = dataset[,group_by], FUN = length)
+  colnames(count) = c(group_by, "count")
+  
+  unsolved = aggregate(dataset$time >= time_limit, by = dataset[,group_by], FUN = sum)
+  colnames(unsolved) = c(group_by, "unsolved")
+  
+  solved_filter = dataset$time < time_limit
+  times = aggregate(dataset[solved_filter,]$time, by = dataset[solved_filter,group_by], FUN = mean)
+  colnames(times) = c(group_by, "time")
+  
+  Table = merge(count, unsolved, by = group_by)
+  Table = merge(Table, times, by = group_by)
+
+  return (Table)
+}
+```
+
+For example, the following table gathers results from the Branch-and-Bound algorithm of idol.
+
+```{r}
+Table = make_table(results[results$solver == "idol_bab",])
+```
+
+```{r echo = FALSE}
+knitr::kable(Table)
+```
+
+## Computational results
+
+### Branch-and-bound algorithm
+
+In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
 
 ```{r}
 performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 3), main = "With and without heuristics")
 ```
-
 
 ### Branch and price
 
