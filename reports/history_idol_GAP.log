@@ -11323,3 +11323,12 @@ lun 19 dic 2022, 11:13:08, CET GAP/data/dummies/dummy external _ _ _
 solve_with_external_solver with time_limit = 300
 lun 19 dic 2022, 11:28:56, CET GAP/data/dummies/dummy external
 solve_with_external_solver with time_limit = 300
+lun 19 dic 2022, 11:31:40, CET bab/* true
+terminate called after throwing an instance of 'std::runtime_error'
+  what():  Expected external|bab|bap for argument method.
+Aborted (core dumped)
+lun 19 dic 2022, 11:32:07, CET bab/* true
+lun 19 dic 2022, 11:32:36, CET bab/* true
+lun 19 dic 2022, 11:32:56, CET GAP/data/dummies/dummy bab true
+lun 19 dic 2022, 11:33:08, CET GAP/data/dummies/dummy bab true
+lun 19 dic 2022, 11:33:42, CET GAP/data/dummies/dummy bab true

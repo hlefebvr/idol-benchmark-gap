@@ -42,7 +42,7 @@ int main(int t_argc, const char** t_argv) {
 
     const bool with_heuristics = parse_bool(t_argv[3]);
 
-    if (method == "idol_bab") {
+    if (method == "bab") {
         solve_with_branch_and_bound(path_to_instance, time_limit, with_heuristics);
         return 0;
     }
