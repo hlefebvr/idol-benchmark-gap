@@ -61,7 +61,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
 
     - name: Solve instances with idol
-      run: echo ${{ matrix.arguments }} | ./run_idol.sh ./GAP/data/dummies
+      run: ./run_idol.sh ./GAP/data/dummies ${{ matrix.arguments }}
 
     - name: Rename results file
       run: mv results_GAP_idol.csv results_GAP_idol__$(uuidgen).csv
