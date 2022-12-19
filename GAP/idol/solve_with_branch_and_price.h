@@ -64,7 +64,7 @@ void solve_with_branch_and_price(const std::string& t_path_to_instance,
     }
 
     if (t_with_heuristics) {
-        //solver.add_callback<Callbacks::RoundingHeuristic>(branching_candidates);
+        solver.add_callback<Callbacks::RoundingHeuristic>(branching_candidates);
     }
     solver.set(Param::Algorithm::TimeLimit, t_time_limit);
 
