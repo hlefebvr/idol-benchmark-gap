@@ -29,7 +29,7 @@ jobs:
       run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
 
     - name: Solve instances with coluna
-      run: ./run_coluna.sh ./GAP/data/small
+      run: ./run_coluna.sh ./GAP/data/tiny
 
     - uses: actions/upload-artifact@v3
       with:
@@ -63,7 +63,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
 
     - name: Solve instances with idol
-      run: ./run_idol.sh ./GAP/data/small ${{ matrix.arguments }}
+      run: ./run_idol.sh ./GAP/data/tiny ${{ matrix.arguments }}
 
     - name: Rename results file
       run: mv results_GAP_idol.csv results_GAP_idol__$(uuidgen).csv

@@ -49,7 +49,7 @@ void solve_with_branch_and_price(const std::string& t_path_to_instance,
     dantzig_wolfe.set(Param::DantzigWolfe::CleanUpThreshold, t_clean_up);
     dantzig_wolfe.set(Param::DantzigWolfe::SmoothingFactor, t_smoothing_factor);
     dantzig_wolfe.set(Param::DantzigWolfe::FarkasPricing, t_farkas_pricing);
-    dantzig_wolfe.set(Param::DantzigWolfe::LogFrequency, 1);
+    //dantzig_wolfe.set(Param::DantzigWolfe::LogFrequency, 10);
 
     auto& master = dantzig_wolfe.set_master_solution_strategy<SOLVER>();
     master.set(Param::Algorithm::InfeasibleOrUnboundedInfo, true);

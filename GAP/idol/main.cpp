@@ -17,7 +17,7 @@ bool parse_bool(const std::string& t_string) {
 int main(int t_argc, const char** t_argv) {
 
     Logs::set_level<BranchAndBound>(Info);
-    Logs::set_level<DantzigWolfe>(Info);
+    //Logs::set_level<DantzigWolfe>(Info);
 
     if (t_argc < 3) {
         throw std::runtime_error("Expected arguments: path_to_instance method [with_heuristics] [smoothing_factor] [farkas_pricing] [branching_on_master]");
@@ -57,22 +57,6 @@ int main(int t_argc, const char** t_argv) {
     const int clean_up = 500;
 
     solve_with_branch_and_price(path_to_instance, time_limit, with_heuristics, smoothing_factor, farkas_pricing, clean_up, branching_on_master);
-
-    /*
-    solve_with_branch_and_bound(path_to_instance, time_limit, false);
-    solve_with_branch_and_bound(path_to_instance, time_limit, true);
-
-    // Branching on master versus on pricing
-    solve_with_branch_and_price(path_to_instance, time_limit, true, 0., false, clean_up, true);
-    solve_with_branch_and_price(path_to_instance, time_limit, true, 0., false, clean_up, false);
-
-    // Artificial variables versus farkas pricing
-    solve_with_branch_and_price(path_to_instance, time_limit, true, 0., true, clean_up, true);
-
-    // Smoothing factor
-    solve_with_branch_and_price(path_to_instance, time_limit, true, .3, false, clean_up, true);
-    solve_with_branch_and_price(path_to_instance, time_limit, true, .8, false, clean_up, true);
-    */
 
     return 0;
 }

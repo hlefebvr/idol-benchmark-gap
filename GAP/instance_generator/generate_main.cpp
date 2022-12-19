@@ -15,11 +15,14 @@ int main(int t_argc, const char** t_argv) {
     const std::string output_dir = t_argv[1];
 
     const std::vector<std::pair<unsigned int, unsigned int>> sizes = {
+            { 2, 30 },
+            { 2, 40 },
+            { 3, 30 },
             { 3, 40 },
     };
 
     for (const auto& [n_agents, n_jobs] : sizes) {
-        for (unsigned int k = 0 ; k < 20 ; ++k) {
+        for (unsigned int k = 0 ; k < 5 ; ++k) {
             auto instance = Problems::GAP::generate_instance_Chu_and_Beasley_1997_C(n_agents, n_jobs);
 
             const std::string filename = output_dir + "/instance_n" + std::to_string(n_agents) + "_" + std::to_string(n_jobs) + "__" + std::to_string(k) + ".txt";
