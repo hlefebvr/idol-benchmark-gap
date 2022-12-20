@@ -67,7 +67,7 @@ In this section, we start by reading the raw computational results stored in CSV
 
 
 ```{r}
-time_limit = 5 * 60
+time_limit = 10 * 60
 ```
 
 
@@ -219,7 +219,7 @@ performance_profile(results, xlim = c(1, 200))
 Similarly, the following will compare specific methods together (in particular, GLPK, idol's branch-and-bound, idol's branch-price-price with primal heuristics, artificial variables, branching on master with smoothing factor 0.3 and coluna).
 
 ```{r}
-performance_profile(results[results$solver_with_params %in% c("external_solver", "idol_bab_h1", "idol_bap_h1_s30_f0_c500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, BaB and BaP")
+performance_profile(results[results$solver_with_params %in% c("external_solver", "idol_bab_h1", "idol_bap_h1_s0_f0_c1500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, BaB and BaP")
 ```
 
 ### Summary tables
@@ -243,23 +243,15 @@ make_table = function (dataset) {
   count = aggregate(dataset$time, by = dataset[,group_by], FUN = length)
   colnames(count) = c(group_by, "count")
   
-  print(count)
-  
   unsolved = aggregate(dataset$time >= time_limit, by = dataset[,group_by], FUN = sum)
   colnames(unsolved) = c(group_by, "unsolved")
-  
-  print(unsolved)
   
   errors = aggregate(dataset$status == "ERROR", by = dataset[,group_by], FUN = sum)
   colnames(errors) = c(group_by, "error")
   
-  print(errors)
-  
   solved_filter = dataset$time < time_limit
   times = aggregate(dataset[solved_filter,]$time, by = dataset[solved_filter,group_by], FUN = mean)
   colnames(times) = c(group_by, "time")
-  
-  print(times)
   
   Table = merge(count, unsolved, by = group_by)
   Table = merge(Table, errors, by = group_by)
@@ -299,7 +291,7 @@ performance_profile(results[results$solver != "external_solver" & results$solver
 
 
 ```{r}
-Table = make_table(results[results$solver_with_params == "idol_bap_h1_s0_f0_c500_m1" | results$solver_with_params == "coluna",])
+Table = make_table(results[results$solver_with_params == "idol_bap_h1_s0_f0_c1500_m1" | results$solver_with_params == "coluna",])
 ```
 
 ```{r echo = FALSE}

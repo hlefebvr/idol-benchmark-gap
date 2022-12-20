@@ -23,7 +23,7 @@ int main(int t_argc, const char** t_argv) {
         throw std::runtime_error("Expected arguments: path_to_instance method [with_heuristics] [smoothing_factor] [farkas_pricing] [branching_on_master]");
     }
 
-    constexpr double time_limit = 5 * 60;
+    constexpr double time_limit = 10 * 60;
     const std::string path_to_instance = t_argv[1];
     const std::string method = t_argv[2];
 
