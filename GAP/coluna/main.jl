@@ -136,6 +136,7 @@ foreach(all_instances) do file
     catch (error)
         write_output(
             file,
+            instance,
             "ERROR",
             "0",
             "999999999999"
