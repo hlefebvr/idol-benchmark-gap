@@ -15,8 +15,8 @@ int main(int t_argc, const char** t_argv) {
     const std::string output_dir = t_argv[1];
 
     const std::vector<std::pair<unsigned int, unsigned int>> sizes = {
-            { 2, 30 },
-            { 2, 40 },
+            //{ 2, 30 },
+            //{ 2, 40 },
             { 3, 30 },
             { 3, 40 },
     };
