@@ -18,7 +18,7 @@ void solve_with_external_solver(const std::string& t_path_to_instance, double t_
 
     auto [model, x, complicating_constraints] = make_model(instance);
 
-    SOLVER solver(model);
+    Solvers::GLPK solver(model);
     solver.set(Param::Algorithm::TimeLimit, t_time_limit);
     solver.solve();
 

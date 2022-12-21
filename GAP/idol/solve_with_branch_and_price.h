@@ -8,6 +8,7 @@
 #include "write_to_file.h"
 #include "make_model.h"
 #include "algorithms/callbacks/Callbacks_RoundingHeuristic.h"
+#include "algorithms/callbacks/Callbacks_IntegerMasterProblem.h"
 #include "algorithms/dantzig-wolfe/DantzigWolfe.h"
 #include "algorithms/dantzig-wolfe/BranchingManagers_OnMaster.h"
 #include "algorithms/dantzig-wolfe/BranchingManagers_OnPricing.h"
@@ -51,11 +52,11 @@ void solve_with_branch_and_price(const std::string& t_path_to_instance,
     dantzig_wolfe.set(Param::DantzigWolfe::FarkasPricing, t_farkas_pricing);
     //dantzig_wolfe.set(Param::DantzigWolfe::LogFrequency, 10);
 
-    auto& master = dantzig_wolfe.set_master_solution_strategy<SOLVER>();
+    auto& master = dantzig_wolfe.set_master_solution_strategy<Solvers::GLPK>();
     master.set(Param::Algorithm::InfeasibleOrUnboundedInfo, true);
 
     for (unsigned int i = 1, n = dantzig_wolfe.reformulation().subproblems().size() ; i <= n ; ++i) {
-        dantzig_wolfe.subproblem(i).set_exact_solution_strategy<SOLVER>();
+        dantzig_wolfe.subproblem(i).set_exact_solution_strategy<Solvers::GLPK>();
         if (t_branching_on_master) {
             dantzig_wolfe.subproblem(i).set_branching_manager<BranchingManagers::OnMaster>();
         } else {
@@ -64,7 +65,8 @@ void solve_with_branch_and_price(const std::string& t_path_to_instance,
     }
 
     if (t_with_heuristics) {
-        solver.add_callback<Callbacks::RoundingHeuristic>(branching_candidates);
+        //solver.add_callback<Callbacks::RoundingHeuristic>(branching_candidates);
+        solver.set_user_callback<Callbacks::IntegerMasterProblem>();
     }
     solver.set(Param::Algorithm::TimeLimit, t_time_limit);
 

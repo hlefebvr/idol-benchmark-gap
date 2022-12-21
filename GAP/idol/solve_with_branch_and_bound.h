@@ -25,7 +25,7 @@ void solve_with_branch_and_bound(const std::string& t_path_to_instance,
 
     const auto branching_candidates = flatten<Var, 2>(x);
 
-    auto solver = branch_and_bound<SOLVER>(model, branching_candidates );
+    auto solver = branch_and_bound<Solvers::GLPK>(model, branching_candidates );
     solver.add_callback<Callbacks::RoundingHeuristic>( branching_candidates );
     if (t_with_heuristics) {
         solver.set(Param::Algorithm::TimeLimit, t_time_limit);
