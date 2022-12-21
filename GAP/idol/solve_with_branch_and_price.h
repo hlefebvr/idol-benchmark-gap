@@ -53,7 +53,10 @@ void solve_with_branch_and_price(const std::string& t_path_to_instance,
     //dantzig_wolfe.set(Param::DantzigWolfe::LogFrequency, 10);
 
     auto& master = dantzig_wolfe.set_master_solution_strategy<Solvers::GLPK>();
-    master.set(Param::Algorithm::InfeasibleOrUnboundedInfo, true);
+
+    if (t_farkas_pricing) {
+        master.set(Param::Algorithm::InfeasibleOrUnboundedInfo, true);
+    }
 
     for (unsigned int i = 1, n = dantzig_wolfe.reformulation().subproblems().size() ; i <= n ; ++i) {
         dantzig_wolfe.subproblem(i).set_exact_solution_strategy<Solvers::GLPK>();
