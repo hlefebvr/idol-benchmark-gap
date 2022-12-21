@@ -36,7 +36,7 @@ jobs:
       run: ./run_coluna.sh ./GAP/data/${{ matrix.instances }}
 
     - name: Rename results file
-      run: mv results_GAP_coluna.csv results_GAP_idol__$(uuidgen).csv
+      run: mv results_GAP_coluna.csv results_GAP_coluna__$(uuidgen).csv
 
     - uses: actions/upload-artifact@v3
       with:
