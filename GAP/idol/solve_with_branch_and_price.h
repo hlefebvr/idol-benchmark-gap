@@ -68,6 +68,8 @@ void solve_with_branch_and_price(const std::string& t_path_to_instance,
     }
     solver.set(Param::Algorithm::TimeLimit, t_time_limit);
 
+    solver.set(Param::BranchAndBound::NodeSelection, NodeSelections::DepthFirst);
+
     solver.solve();
 
     write_to_file(
