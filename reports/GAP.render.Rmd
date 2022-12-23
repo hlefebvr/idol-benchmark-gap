@@ -133,11 +133,45 @@ The list of all tested configuration of solvers can be obtained as follows.
 
 ```{r}
 solvers = as.data.frame(unique(results$solver_with_params))
+solvers = as.data.frame(sort(solvers[,1], decreasing = TRUE))
 colnames(solvers) = "Solver"
 ```
 
 ```{r echo = FALSE}
 knitr::kable(solvers)
+```
+
+```{r}
+colors = cbind(solvers, rainbow(nrow(solvers)))
+```
+
+## Checking results
+
+In this section, we first make sure that every solver reports the same optimal objective value for solved instances. We thus introduce function `compare_results` which takes as input a set of results and two solver names for which the results should be compared. The function returns the list of instances which for which the two methods report different objective values (with a tolerance of $10^{-3}$).
+
+```{r}
+solved_results = results[results$time < time_limit,]
+
+compare_results = function (dataset, solver_a, solver_b) {
+  
+  results_a = dataset[dataset$solver_with_params == solver_a & dataset$time < time_limit,]
+  results_b = dataset[dataset$solver_with_params == solver_b & dataset$time < time_limit,]
+  
+  merged = merge(results_a, results_b, by = c("instance"))
+  
+  return ( merged[ abs(merged$objective_value.x - merged$objective_value.y) > 1e-2 ,] )
+}
+```
+
+Then, we compare all solvers together.
+
+```{r}
+for (solver_with_params in unique(results$solver_with_params)) {
+  mismatch = compare_results(results, "external_solver", solver_with_params)
+  if (nrow(mismatch) > 0) {
+    paged_table(mismatch)
+  }
+}
 ```
 
 ## Some helper functions
@@ -147,11 +181,11 @@ knitr::kable(solvers)
 To compare the different methods, we use performance profiles as introduced in [Dolan et al. (2002)](https://link.springer.com/article/10.1007/s101070100263). The following function is used to compute and plot the performance profile of a given dataset.
 
 ```{r}
-performance_profile = function (dataset, color = NULL, xlim = NULL, main = "Performance profile") {
+performance_profile = function (dataset, xlim = NULL, main = "Performance profile") {
   
   solvers = unique(dataset$solver_with_params)
   times = spread(dataset[,c("instance", "solver_with_params", "time")], key = solver_with_params, value = time)
-  times = na.omit(times)
+  #times = na.omit(times)
   times$time.best = apply(times[,-1], 1, FUN = min)
   
   ratios = times[,-ncol(times)][,-1] / times$time.best
@@ -172,11 +206,9 @@ performance_profile = function (dataset, color = NULL, xlim = NULL, main = "Perf
     xlim = c(1, worst_ratio)
   }
   
-  if (is.null(color)) {
-    color = rainbow(length(solvers))
-  }
-  
   par(mar = c(5,4,4,8))
+  
+  using_colors = NULL
   
   index = 1
   for (solver in solvers) {
@@ -185,7 +217,10 @@ performance_profile = function (dataset, color = NULL, xlim = NULL, main = "Perf
     
     profile = ecdf(times[,paste0(solver, ".ratio")])
     
-    plot_function(profile, xlim = xlim, ylim = c(0,1), lty = "solid", cex = 0, col = color[index], main = "", xlab = "", ylab = "")
+    using_color =  colors[colors$Solver == solver,2]
+    using_colors = rbind(using_colors, using_color)
+    
+    plot_function(profile, xlim = xlim, ylim = c(0,1), lty = "solid", cex = 0, col = using_color, main = "", xlab = "", ylab = "")
     
     index = index + 1
   }
@@ -201,7 +236,7 @@ performance_profile = function (dataset, color = NULL, xlim = NULL, main = "Perf
     inset=c(-.35, 0),
     legend = solvers,
     lty = "solid",
-    col = color,
+    col = using_colors,
     cex = .5,
     xpd = TRUE,
     bty = "n"
@@ -278,7 +313,7 @@ knitr::kable(Table)
 In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 3), main = "With and without heuristics")
+performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 2), main = "With and without heuristics")
 ```
 
 ### Branch and price
@@ -296,6 +331,30 @@ Table = make_table(results[results$solver_with_params == "idol_bap_h1_s0_f0_c150
 
 ```{r echo = FALSE}
 knitr::kable(Table)
+```
+
+We also have a look at pathological instances for idol where the execution time is $20%$ worst than coluna's time. This is to spot and study why this happens and potentially fix the issue.
+
+```{r}
+find_pathological_instances = function (dataset, solver_a, solver_b) {
+  
+  results_a = dataset[dataset$solver_with_params == solver_a,]
+  results_b = dataset[dataset$solver_with_params == solver_b,]
+  
+  merged = merge(results_a, results_b, by = c("instance"))
+  
+  result = merged[ merged$time.y > 1.2 * merged$time.x , c("instance", "time.x", "time.y", "status.x", "status.y")]
+  
+  colnames(result) = c("instance", paste0(solver_a, ".time"), paste0(solver_b, ".time"), paste0(solver_a, ".status"), paste0(solver_b, ".status"))
+  
+  return ( result )
+}
+
+pathological_instances = find_pathological_instances(results, "coluna", "idol_bap_h1_s0_f0_c1500_m1")
+```
+
+```{r}
+paged_table(pathological_instances)
 ```
 
 #### Branching on master versus branching on pricing
