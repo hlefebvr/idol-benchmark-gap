@@ -313,7 +313,8 @@ knitr::kable(Table)
 In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 2), main = "With and without heuristics")
+performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 10), main = "With and without heuristics")
+performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 200), main = "With and without heuristics")
 ```
 
 ### Branch and price
@@ -321,7 +322,8 @@ performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 2), main
 #### With coluna
 
 ```{r}
-performance_profile(results[results$solver != "external_solver" & results$solver != "idol_bab",], xlim = c(1, 10), main = "idol versus coluna")
+performance_profile(results[results$solver != "external_solver" & results$solver != "idol_bab",], xlim = c(1, 10), main = "idol versus coluna (up to 10)")
+performance_profile(results[results$solver != "external_solver" & results$solver != "idol_bab",], xlim = c(1, 200), main = "idol versus coluna (up to 200)")
 ```
 
 
@@ -362,7 +364,8 @@ paged_table(pathological_instances)
 Comparing branching scheme (on master or on pricing problem) without smoothing, using artificial variables (phase I) and primal heuristics.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], xlim = c(1, 3), main = "Branching on master versus subproblem")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], xlim = c(1, 10), main = "Branching on master versus subproblem (up to 10)")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], xlim = c(1, 200), main = "Branching on master versus subproblem (up to 200)")
 ```
 
 #### Using artificial variables versus Farkas pricing
@@ -370,7 +373,8 @@ performance_profile(results[results$solver == "idol_bap" & results$with_heuristi
 Comparing farkas pricing with artificial variables (phase I) using primal heuristics, master branching and no smoothing.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], xlim = c(1, 3), main = "Using artificial costs versus Farkas pricing")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], xlim = c(1, 10), main = "Using artificial costs versus Farkas pricing (up to 10)")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], xlim = c(1, 200), main = "Using artificial costs versus Farkas pricing (up to 200)")
 ```
 
 #### Smoothing factor
@@ -378,5 +382,6 @@ performance_profile(results[results$solver == "idol_bap" & results$with_heuristi
 Comparing smoothing factors with artificial variables, master branching and primal heuristics.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == 0,], xlim = c(1, 3), main = "Smoothing factor")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == 0,], xlim = c(1, 10), main = "Smoothing factor (up to 10)")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == 0,], xlim = c(1, 200), main = "Smoothing factor (up to 200)")
 ```
