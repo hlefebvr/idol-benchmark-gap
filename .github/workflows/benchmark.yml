@@ -19,10 +19,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Download libcurl
+    - name: Install libcurl
+      run:  sudo apt-get install libxml2-dev libfontconfig1-dev
+
+    - name: Download openssl
       run: wget http://archive.ubuntu.com/ubuntu/pool/main/c/curl/libcurl4-openssl-dev_7.81.0-1_amd64.deb
 
-    - name: Install libcurl
+    - name: Install openssl
       run: sudo dpkg -i libcurl4-openssl-dev_7.81.0-1_amd64.deb
 
   coluna:
