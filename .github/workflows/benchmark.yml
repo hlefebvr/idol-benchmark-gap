@@ -14,6 +14,17 @@ env:
 
 jobs:
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Download libcurl
+      run: wget http://ports.ubuntu.com/pool/main/c/curl/libcurl4-openssl-dev_7.81.0-1_arm64.deb
+
+    - name: Install libcurl
+      run: sudo dpkg -i libcurl4-openssl-dev_7.81.0-1_arm64.deb
+
   coluna:
     runs-on: ubuntu-latest
     strategy:
