@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "backends/parameters/Logs.h"
-#include "backends/column-generation/ColumnGeneration.h"
-#include "backends/BranchAndBoundMIP.h"
-#include "backends/BranchAndPriceMIP.h"
+#include "modeling.h"
+#include "solvers.h"
+#include "problems/generalized-assignment-problem/GAP_Instance.h"
+#include "write_to_file.h"
 
 bool parse_bool(const std::string& t_string) {
     if (t_string == "true") {
