@@ -5,9 +5,9 @@
 #ifndef IDOL_BENCHMARK_WRITE_TO_FILE_H
 #define IDOL_BENCHMARK_WRITE_TO_FILE_H
 
-#include <problems/GAP/GAP_Instance.h>
+#include <problems/generalized-assignment-problem/GAP_Instance.h>
 #include <fstream>
-#include "algorithms/solvers/SolutionStatus.h"
+#include "modeling/solutions/types.h"
 
 void write_to_file(
         const std::string& t_path_to_instance,
@@ -19,7 +19,7 @@ void write_to_file(
         unsigned int t_clean_up,
         bool t_branching_on_master,
         SolutionStatus t_status,
-        Reason t_reason,
+        SolutionReason t_reason,
         double t_objective_value,
         double t_time
 ) {

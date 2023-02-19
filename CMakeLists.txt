@@ -13,7 +13,7 @@ include(FetchContent)
 FetchContent_Declare(
         idol
         GIT_REPOSITORY https://github.com/hlefebvr/idol.git
-        GIT_TAG        origin/dev
+        GIT_TAG        origin/main
 )
 
 FetchContent_MakeAvailable(idol)
