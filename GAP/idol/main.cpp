@@ -123,7 +123,7 @@ int main(int t_argc, const char** t_argv) {
     write_to_file(
             path_to_instance,
             t_instance,
-            "external_solver",
+            method,
             with_heuristics,
             smoothing_factor,
             with_farkas_pricing,
