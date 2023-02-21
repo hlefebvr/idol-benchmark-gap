@@ -108,6 +108,7 @@ int main(int t_argc, const char** t_argv) {
         model.set(Param::ColumnGeneration::FarkasPricing, with_farkas_pricing);
         model.set(Param::ColumnGeneration::BranchingOnMaster, branching_on_master);
         model.set(Param::ColumnGeneration::CleanUpThreshold, clean_up);
+        model.set(Param::BranchAndPrice::IntegerMasterHeuristic, with_heuristics);
 
     } else {
 
