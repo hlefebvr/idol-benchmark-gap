@@ -31,7 +31,7 @@ void write_to_file(
     }
 
     file << t_path_to_instance << ','
-         << t_solver_name << ','
+         << (t_solver_name == "external" ? t_solver_name : "idol_" + t_solver_name) << ','
          << t_with_heuristics << ','
          << t_smoothing_factor << ','
          << t_farkas_pricing << ','

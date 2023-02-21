@@ -80,17 +80,17 @@ idol = read.csv("../results_GAP_idol.csv", header = FALSE)
 colnames(idol) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "n_agents", "n_jobs", "status", "reason", "objective_value", "time")
 ```
 
-Since the "external_solver" approach (as well as the "idol_bab" approach) do not have relevant parameter values for "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold" and "branching_on_master", we set these values to `NA`.
+Since the "glpk" approach (as well as the "idol_bab" approach) do not have relevant parameter values for "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold" and "branching_on_master", we set these values to `NA`.
 
 ```{r}
-idol[idol$solver == "external_solver",]$with_heuristics = NA
-idol[idol$solver == "external_solver" | idol$solver == "idol_bab",]$smoothing_factor = NA
-idol[idol$solver == "external_solver" | idol$solver == "idol_bab",]$farkas_pricing = NA
-idol[idol$solver == "external_solver" | idol$solver == "idol_bab",]$clean_up_threshold = NA
-idol[idol$solver == "external_solver" | idol$solver == "idol_bab",]$branching_on_master = NA
+idol[idol$solver == "glpk",]$with_heuristics = NA
+idol[idol$solver == "glpk" | idol$solver == "idol_bab",]$smoothing_factor = NA
+idol[idol$solver == "glpk" | idol$solver == "idol_bab",]$farkas_pricing = NA
+idol[idol$solver == "glpk" | idol$solver == "idol_bab",]$clean_up_threshold = NA
+idol[idol$solver == "glpk" | idol$solver == "idol_bab",]$branching_on_master = NA
 ```
 
-Then, we concatenate the parameter values with the method's name to obtain a unique identifier for each tested method. The unique identifier can be `external_solver`, `idol_bab_h<A>` or `idol_bap_h<A>_s<B>_f<C>_c<D>_m<E>` where
+Then, we concatenate the parameter values with the method's name to obtain a unique identifier for each tested method. The unique identifier can be `glpk`, `idol_bab_h<A>` or `idol_bap_h<A>_s<B>_f<C>_c<D>_m<E>` where
 
 - `<A>` is 1 if the algorithm uses primal heuristics, 0 otherwise ; 
 - `<B>` is the smoothing factor (when relevant) multiplied by 100 ;
@@ -100,7 +100,7 @@ Then, we concatenate the parameter values with the method's name to obtain a uni
 
 ```{r}
 idol$solver_with_params = paste0(idol$solver, "_h", idol$with_heuristics, "_s", idol$smoothing_factor * 100, "_f", idol$farkas_pricing, "_c", idol$clean_up, "_m", idol$branching_on_master)
-idol[idol$solver == "external_solver",]$solver_with_params = "external_solver"
+idol[idol$solver == "glpk",]$solver_with_params = "glpk"
 idol[idol$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", idol[idol$solver == "idol_bab",]$with_heuristics)
 ```
 
@@ -167,7 +167,7 @@ Then, we compare all solvers together.
 
 ```{r}
 for (solver_with_params in unique(results$solver_with_params)) {
-  mismatch = compare_results(results, "external_solver", solver_with_params)
+  mismatch = compare_results(results, "glpk", solver_with_params)
   if (nrow(mismatch) > 0) {
     paged_table(mismatch)
   }
@@ -254,7 +254,7 @@ performance_profile(results, xlim = c(1, 200))
 Similarly, the following will compare specific methods together (in particular, GLPK, idol's branch-and-bound, idol's branch-price-price with primal heuristics, artificial variables, branching on master with smoothing factor 0.3 and coluna).
 
 ```{r}
-performance_profile(results[results$solver_with_params %in% c("external_solver", "idol_bab_h1", "idol_bap_h1_s0_f0_c1500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, BaB and BaP")
+performance_profile(results[results$solver_with_params %in% c("glpk", "idol_bab_h1", "idol_bap_h1_s0_f0_c1500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, BaB and BaP")
 ```
 
 ### Summary tables
@@ -322,8 +322,8 @@ performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 200), ma
 #### With coluna
 
 ```{r}
-performance_profile(results[results$solver != "external_solver" & results$solver != "idol_bab",], xlim = c(1, 10), main = "idol versus coluna (up to 10)")
-performance_profile(results[results$solver != "external_solver" & results$solver != "idol_bab",], xlim = c(1, 200), main = "idol versus coluna (up to 200)")
+performance_profile(results[results$solver != "glpk" & results$solver != "idol_bab",], xlim = c(1, 10), main = "idol versus coluna (up to 10)")
+performance_profile(results[results$solver != "glpk" & results$solver != "idol_bab",], xlim = c(1, 200), main = "idol versus coluna (up to 200)")
 ```
 
 
