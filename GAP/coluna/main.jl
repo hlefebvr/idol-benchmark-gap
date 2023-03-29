@@ -59,7 +59,8 @@ function make_model(instance::Instance, time_limit::Int)
                     ],
                     max_nb_cut_rounds = 0
                 ),
-                timelimit = time_limit
+                timelimit = time_limit,
+                explorestrategy = Coluna.Algorithm.BestDualBoundStrategy()
             )
         ),
         "default_optimizer" => GLPK.Optimizer # GLPK for the master & the subproblems
