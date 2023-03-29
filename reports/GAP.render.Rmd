@@ -254,7 +254,7 @@ performance_profile(results, xlim = c(1, 200))
 Similarly, the following will compare specific methods together (in particular, external, idol's branch-and-bound, idol's branch-price-price with primal heuristics, artificial variables, branching on master with smoothing factor 0.3 and coluna).
 
 ```{r}
-performance_profile(results[results$solver_with_params %in% c("external", "idol_bab_h1", "idol_bap_h1_s0_f0_c1500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, BaB and BaP")
+performance_profile(results[results$solver_with_params %in% c("external", "idol_bap_h1_s0_f0_c1500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, idol")
 ```
 
 ### Summary tables
@@ -296,10 +296,10 @@ make_table = function (dataset) {
 }
 ```
 
-For example, the following table gathers results from the Branch-and-Bound algorithm of idol.
+For example, the following table gathers results from the Branch-and-Bound algorithm of coluna.
 
 ```{r}
-Table = make_table(results[results$solver == "idol_bab",])
+Table = make_table(results[results$solver == "coluna",])
 ```
 
 ```{r echo = FALSE}
@@ -308,22 +308,13 @@ knitr::kable(Table)
 
 ## Computational results
 
-### Branch-and-bound algorithm
-
-In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
-
-```{r}
-performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 10), main = "With and without heuristics")
-performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 200), main = "With and without heuristics")
-```
-
 ### Branch and price
 
 #### With coluna
 
 ```{r}
-performance_profile(results[results$solver != "external" & results$solver != "idol_bab",], xlim = c(1, 10), main = "idol versus coluna (up to 10)")
-performance_profile(results[results$solver != "external" & results$solver != "idol_bab",], xlim = c(1, 200), main = "idol versus coluna (up to 200)")
+performance_profile(results[results$solver != "external",], xlim = c(1, 10), main = "idol versus coluna (up to 10)")
+performance_profile(results[results$solver != "external",], xlim = c(1, 200), main = "idol versus coluna (up to 200)")
 ```
 
 

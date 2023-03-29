@@ -92,7 +92,7 @@ int main(int t_argc, const char** t_argv) {
                     .with_node_solver(GLPK::ContinuousRelaxation())
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
-                    .with_time_limit(time_limit)
+                    .with_time_limit(1000)
             );
 
     } else if (method == "bap") {

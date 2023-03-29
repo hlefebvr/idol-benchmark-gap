@@ -53,8 +53,6 @@ jobs:
       matrix:
         arguments:
           - "external"
-          - "bab true"
-          - "bab false"
           - "bap true 0 false true"
           - "bap true 0 false false"
           - "bap true 0 true true"
@@ -63,9 +61,9 @@ jobs:
         instances:
           - "n2"
           - "n3"
-          - "n4"
-          - "n5"
-          - "n10"
+          #- "n4"
+          #- "n5"
+          #- "n10"
     steps:
     - uses: actions/checkout@v3
 
