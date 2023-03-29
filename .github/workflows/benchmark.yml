@@ -63,6 +63,9 @@ jobs:
         instances:
           - "n2"
           - "n3"
+          - "n3_bigger"
+          - "n5"
+          - "n10"
     steps:
     - uses: actions/checkout@v3
 

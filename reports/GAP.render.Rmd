@@ -185,7 +185,7 @@ performance_profile = function (dataset, xlim = NULL, main = "Performance profil
   
   solvers = unique(dataset$solver_with_params)
   times = spread(dataset[,c("instance", "solver_with_params", "time")], key = solver_with_params, value = time)
-  #times = na.omit(times)
+  times = na.omit(times)
   times$time.best = apply(times[,-1], 1, FUN = min)
   
   ratios = times[,-ncol(times)][,-1] / times$time.best

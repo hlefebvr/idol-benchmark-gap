@@ -16,9 +16,15 @@ int main(int t_argc, const char** t_argv) {
 
     const std::vector<std::pair<unsigned int, unsigned int>> sizes = {
             //{ 2, 30 },
-            { 2, 40 },
+            //{ 2, 40 },
             //{ 3, 30 },
             //{ 3, 40 },
+            { 4, 60 },
+            { 4, 80 },
+            //{ 5, 100 },
+            //{ 5, 200 }
+            //{ 10, 100 },
+            //{ 10, 200 }
     };
 
     for (const auto& [n_agents, n_jobs] : sizes) {
