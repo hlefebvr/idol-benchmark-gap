@@ -4,6 +4,9 @@
 #include "solvers.h"
 #include "problems/generalized-assignment-problem/GAP_Instance.h"
 #include "write_to_file.h"
+#include "optimizers/branch-and-bound/node-selection-rules/factories/BestBound.h"
+#include "optimizers/branch-and-bound/branching-rules/factories/MostInfeasible.h"
+#include "optimizers/dantzig-wolfe/DantzigWolfeDecomposition.h"
 
 bool parse_bool(const std::string& t_string) {
     if (t_string == "true") {
@@ -16,9 +19,6 @@ bool parse_bool(const std::string& t_string) {
 }
 
 int main(int t_argc, const char** t_argv) {
-
-    Logs::set_level<BranchAndBound>(Debug);
-    Logs::set_level<ColumnGeneration>(Info);
 
     if (t_argc < 3) {
         throw std::runtime_error("Expected arguments: path_to_instance method [with_heuristics] [smoothing_factor] [farkas_pricing] [branching_on_master]");
@@ -77,7 +77,7 @@ int main(int t_argc, const char** t_argv) {
     // Set optimizer
     if (method == "external") {
 
-        Idol::set_optimizer<GLPK>(model);
+        model.use(GLPK().with_time_limit(time_limit));
 
     } else if (method == "bab") {
 
@@ -87,7 +87,13 @@ int main(int t_argc, const char** t_argv) {
 
         with_heuristics = parse_bool(t_argv[3]);
 
-        Idol::set_optimizer<BranchAndBoundMIP<GLPK>>(model);
+        model.use(
+                BranchAndBound()
+                    .with_node_solver(GLPK::ContinuousRelaxation())
+                    .with_branching_rule(MostInfeasible())
+                    .with_node_selection_rule(BestBound())
+                    .with_time_limit(time_limit)
+            );
 
     } else if (method == "bap") {
 
@@ -102,22 +108,29 @@ int main(int t_argc, const char** t_argv) {
         branching_on_master = parse_bool(t_argv[6]);
         clean_up = 1500;
 
-        Idol::set_optimizer<BranchAndPriceMIP<GLPK>>(model, decomposition);
+        model.use(
+                BranchAndBound()
+                    .with_node_solver(
+                        DantzigWolfeDecomposition(decomposition)
+                            .with_master_solver(GLPK::ContinuousRelaxation())
+                            .with_pricing_solver(GLPK())
+                            .with_dual_price_smoothing_stabilization(smoothing_factor)
+                            .with_branching_on_master(branching_on_master)
+                            .with_column_pool_clean_up(clean_up, .75)
+                            .with_farkas_pricing(with_farkas_pricing)
+                    )
+                    .with_branching_rule(MostInfeasible())
+                    .with_node_selection_rule(BestBound())
+                    .with_time_limit(time_limit)
+            );
 
-        model.set(Param::ColumnGeneration::SmoothingFactor, smoothing_factor);
-        model.set(Param::ColumnGeneration::FarkasPricing, with_farkas_pricing);
-        model.set(Param::ColumnGeneration::BranchingOnMaster, branching_on_master);
-        model.set(Param::ColumnGeneration::CleanUpThreshold, clean_up);
-        model.set(Param::BranchAndPrice::IntegerMasterHeuristic, with_heuristics);
+        std::cout << "WARNING: NO PRIMAL HEURISTIC IS BEING USED" << std::endl;
 
     } else {
 
         throw std::runtime_error("Expected external|bab|bap for argument method.");
 
     }
-
-    // Set time limit
-    model.set(Param::Algorithm::TimeLimit, time_limit);
 
     model.optimize();
 
@@ -133,7 +146,7 @@ int main(int t_argc, const char** t_argv) {
             (SolutionStatus) model.get(Attr::Solution::Status),
             (SolutionReason) model.get(Attr::Solution::Reason),
             model.get(Attr::Solution::ObjVal),
-            model.time().count()
+            model.optimizer().time().count()
     );
 
     return 0;
