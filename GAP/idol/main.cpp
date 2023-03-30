@@ -78,7 +78,7 @@ int main(int t_argc, const char** t_argv) {
     // Set optimizer
     if (method == "external") {
 
-        model.use(Mosek().with_time_limit(time_limit));
+        model.use(GLPK().with_time_limit(time_limit));
 
     } else if (method == "bab") {
 
@@ -90,7 +90,7 @@ int main(int t_argc, const char** t_argv) {
 
         model.use(
                 BranchAndBound()
-                    .with_node_solver(Mosek::ContinuousRelaxation())
+                    .with_node_solver(GLPK::ContinuousRelaxation())
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
                     .with_time_limit(time_limit)
@@ -113,13 +113,12 @@ int main(int t_argc, const char** t_argv) {
                 BranchAndBound()
                     .with_node_solver(
                         DantzigWolfeDecomposition(decomposition)
-                            .with_master_solver(Mosek::ContinuousRelaxation())
-                            .with_pricing_solver(Mosek())
+                            .with_master_solver(GLPK::ContinuousRelaxation())
+                            .with_pricing_solver(GLPK())
                             .with_dual_price_smoothing_stabilization(smoothing_factor)
                             .with_branching_on_master(branching_on_master)
                             .with_column_pool_clean_up(clean_up, .75)
                             .with_farkas_pricing(with_farkas_pricing)
-                            .with_log_level(Debug)
                     )
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
@@ -127,10 +126,9 @@ int main(int t_argc, const char** t_argv) {
                     .conditional(with_heuristics, [](auto& x){
                         x.with_callback(
                                 IntegerMasterHeuristic()
-                                    .with_solver(Mosek())
+                                    .with_solver(GLPK())
                             );
                     })
-                    .with_log_level(Debug)
             );
 
     } else {
