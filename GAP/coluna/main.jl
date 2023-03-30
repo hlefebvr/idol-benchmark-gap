@@ -7,7 +7,7 @@ if (length(ARGS) != 2)
 end
 
 if (ARGS[1] == "mosek")
-    using Mosek;
+    using MosekTools;
 elseif (ARGS[1] == "gurobi")
     using Gurobi;
 else

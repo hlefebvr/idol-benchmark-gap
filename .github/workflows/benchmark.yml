@@ -35,7 +35,7 @@ jobs:
     - uses: julia-actions/setup-julia@latest
 
     - name: Install JuMP, coluna.jl and Mosek.jl
-      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("Mosek"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
 
     - name: Install Mosek license
       run: echo ${{ secrets.MOSEK_LICENSE }} > mosek/mosek.lic
