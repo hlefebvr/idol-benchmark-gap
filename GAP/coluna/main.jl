@@ -62,7 +62,7 @@ function make_model(instance::Instance, time_limit::Int)
                                                     cleanup_threshold = 1500
                                                 )
                                             ],
-                        primal_heuristics = Coluna.Algorithm.ParameterizedHeuristic[],
+                        #primal_heuristics = Coluna.Algorithm.ParameterizedHeuristic[],
                         max_nb_cut_rounds = 0
                 ),
                 timelimit = time_limit,
