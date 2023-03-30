@@ -181,10 +181,6 @@ for (solver_with_params in unique(results$solver_with_params)) {
 To compare the different methods, we use performance profiles as introduced in [Dolan et al. (2002)](https://link.springer.com/article/10.1007/s101070100263). The following function is used to compute and plot the performance profile of a given dataset.
 
 ```{r}
-spread(results[,c("instance", "solver_with_params", "time")], key = solver_with_params, value = time)
-```
-
-```{r}
 performance_profile = function (dataset, xlim = NULL, main = "Performance profile") {
   
   solvers = unique(dataset$solver_with_params)
