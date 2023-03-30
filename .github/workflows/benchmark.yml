@@ -55,6 +55,8 @@ jobs:
       matrix:
         arguments:
           - "external"
+          - "bab true"
+          - "bab false"
           - "bap true 0 false true"
           - "bap true 0 false false"
           - "bap true 0 true true"
@@ -69,17 +71,28 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Update apt-get
-      run: sudo apt-get update
+    #- name: Update apt-get
+    #  run: sudo apt-get update
 
-    - name: Install GLPK
-      run: sudo apt-get install glpk-utils libglpk-dev
+    - name: Download Mosek
+      run: wget https://download.mosek.com/stable/10.0.40/mosektoolslinux64x86.tar.bz2
+
+    - name: Install Mosek
+      run:
+        - tar xvf mosektoolslinux64x86.tar.bz2
+        - (cd mosek/*/tools/platform/*/src/fusion_cxx && make install)
+
+    #- name: Install GLPK
+    #  run: sudo apt-get install glpk-utils libglpk-dev
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/cmake-build-debug -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/cmake-build-debug -DMOSEK_DIR=mosek/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
+
+    - name: Install mosek license
+      run: echo ${{ secrets.MOSEK_LICENSE }} > mosek/mosek.lic
 
     - name: Solve instances with idol
       run: ./run_idol.sh ./GAP/data/${{ matrix.instances }} ${{ matrix.arguments }}

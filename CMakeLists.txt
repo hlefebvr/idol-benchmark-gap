@@ -3,10 +3,7 @@ project(idol_benchmark)
 
 set(CMAKE_CXX_STANDARD 17)
 
-if (NOT DEFINED USE_GUROBI)
-    set(USE_GLPK YES)
-    message("Using GLPK")
-endif()
+set(USE_MOSEK YES)
 
 include(FetchContent)
 

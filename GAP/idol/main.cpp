@@ -77,7 +77,7 @@ int main(int t_argc, const char** t_argv) {
     // Set optimizer
     if (method == "external") {
 
-        model.use(GLPK().with_time_limit(time_limit));
+        model.use(Mosek().with_time_limit(time_limit));
 
     } else if (method == "bab") {
 
@@ -89,10 +89,10 @@ int main(int t_argc, const char** t_argv) {
 
         model.use(
                 BranchAndBound()
-                    .with_node_solver(GLPK::ContinuousRelaxation())
+                    .with_node_solver(Mosek::ContinuousRelaxation())
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
-                    .with_time_limit(1000)
+                    .with_time_limit(time_limit)
             );
 
     } else if (method == "bap") {
@@ -112,8 +112,8 @@ int main(int t_argc, const char** t_argv) {
                 BranchAndBound()
                     .with_node_solver(
                         DantzigWolfeDecomposition(decomposition)
-                            .with_master_solver(GLPK::ContinuousRelaxation())
-                            .with_pricing_solver(GLPK())
+                            .with_master_solver(Mosek::ContinuousRelaxation())
+                            .with_pricing_solver(Mosek())
                             .with_dual_price_smoothing_stabilization(smoothing_factor)
                             .with_branching_on_master(branching_on_master)
                             .with_column_pool_clean_up(clean_up, .75)
