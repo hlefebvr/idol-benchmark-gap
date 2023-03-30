@@ -131,7 +131,7 @@ foreach(all_instances) do file
 
     println("Solving " * file)
 
-    try
+    #try
         optimize!(model)
 
         write_output(
@@ -142,7 +142,7 @@ foreach(all_instances) do file
             string(solve_time(model))
         )
 
-    catch (error)
+    #catch (error)
         println("FAILED.")
 
         write_output(
@@ -152,6 +152,6 @@ foreach(all_instances) do file
             "0",
             "999999999999"
         )
-    end
+    #end
 
 end

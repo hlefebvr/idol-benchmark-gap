@@ -119,6 +119,7 @@ int main(int t_argc, const char** t_argv) {
                             .with_branching_on_master(branching_on_master)
                             .with_column_pool_clean_up(clean_up, .75)
                             .with_farkas_pricing(with_farkas_pricing)
+                            .with_log_level(Debug)
                     )
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
@@ -129,9 +130,8 @@ int main(int t_argc, const char** t_argv) {
                                     .with_solver(Mosek())
                             );
                     })
+                    .with_log_level(Debug)
             );
-
-        std::cout << "WARNING: NO PRIMAL HEURISTIC IS BEING USED" << std::endl;
 
     } else {
 
@@ -155,6 +155,8 @@ int main(int t_argc, const char** t_argv) {
             model.get(Attr::Solution::ObjVal),
             model.optimizer().time().count()
     );
+
+    std::cout << "OK." << std::endl;
 
     return 0;
 }

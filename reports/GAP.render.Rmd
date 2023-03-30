@@ -109,11 +109,11 @@ idol[idol$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", idol[
 The results obtained using coluna can be found inside `results_GAP_coluna.csv`.
 
 ```{r}
-coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
-colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
-coluna$solver_with_params = "coluna"
+#coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
+#colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
+#coluna$solver_with_params = "coluna"
 
-coluna[coluna$status == "ERROR",]$time = time_limit
+#coluna[coluna$status == "ERROR",]$time = time_limit
 ```
 
 ### All
@@ -121,7 +121,8 @@ coluna[coluna$status == "ERROR",]$time = time_limit
 We can now combine and print out the obtained computational results for each instance for each solver.
 
 ```{r}
-results = rbind(idol, coluna)
+#results = rbind(idol, coluna)
+results = idol
 ```
 
 
@@ -179,6 +180,10 @@ for (solver_with_params in unique(results$solver_with_params)) {
 ### Performance profiles
 
 To compare the different methods, we use performance profiles as introduced in [Dolan et al. (2002)](https://link.springer.com/article/10.1007/s101070100263). The following function is used to compute and plot the performance profile of a given dataset.
+
+```{r}
+spread(results[,c("instance", "solver_with_params", "time")], key = solver_with_params, value = time)
+```
 
 ```{r}
 performance_profile = function (dataset, xlim = NULL, main = "Performance profile") {
@@ -245,7 +250,7 @@ performance_profile = function (dataset, xlim = NULL, main = "Performance profil
 }
 ```
 
-For instance, the following executation will plot a performance profile over all tested methods.
+For instance, the following execution will plot a performance profile over all tested methods.
 
 ```{r}
 performance_profile(results, xlim = c(1, 200))
