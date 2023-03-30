@@ -8,10 +8,15 @@ end
 
 if (ARGS[1] == "mosek")
     using MosekTools;
+    ExternalSolver = Mosek.Optimizer;
+elseif (ARGS[1] == "glpk")
+    using GLPK;
+    ExternalSolver = GLPK.Optimizer
 elseif (ARGS[1] == "gurobi")
     using Gurobi;
+    ExternalSolver = Gurobi.Optimizer
 else
-    throw(ErrorException("Allowed values for parameter 1: mosek, gurobi"));
+    throw(ErrorException("Allowed values for parameter 1: mosek, glpk, gurobi"));
 end
 
 instance_folder = ARGS[2]
@@ -64,7 +69,7 @@ function make_model(instance::Instance, time_limit::Int)
                 explorestrategy = Coluna.Algorithm.BestDualBoundStrategy()
             )
         ),
-        "default_optimizer" => Mosek.Optimizer # Mosek for the master & the subproblems
+        "default_optimizer" => ExternalSolver # Mosek for the master & the subproblems
     );
 
     @axis(M_axis, instance.M);
