@@ -78,9 +78,7 @@ jobs:
       run: wget https://download.mosek.com/stable/10.0.40/mosektoolslinux64x86.tar.bz2
 
     - name: Install Mosek
-      run:
-        - tar xvf mosektoolslinux64x86.tar.bz2
-        - (cd mosek/*/tools/platform/*/src/fusion_cxx && make install)
+      run: tar xvf mosektoolslinux64x86.tar.bz2 && (cd mosek/*/tools/platform/*/src/fusion_cxx && make install)
 
     #- name: Install GLPK
     #  run: sudo apt-get install glpk-utils libglpk-dev
