@@ -81,7 +81,7 @@ jobs:
       run: wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
 
     - name: Install Eigen
-      run: tar xvf eigen-3.4.0 -C ${{github.workspace}} && mv ${{github.workspace}}/eigen Eigen
+      run: tar xvf eigen-3.4.0 -C ${{github.workspace}} && mv ${{github.workspace}}/eigen-3.4.0 Eigen
 
     - name: Download Mosek
       run: wget https://download.mosek.com/stable/10.0.40/mosektoolslinux64x86.tar.bz2
