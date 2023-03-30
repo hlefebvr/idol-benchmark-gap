@@ -78,13 +78,13 @@ jobs:
       run: wget https://download.mosek.com/stable/10.0.40/mosektoolslinux64x86.tar.bz2
 
     - name: Install Mosek
-      run: tar xvf mosektoolslinux64x86.tar.bz2 -C ${{github.workspace}}/ && (cd ${{github.workspace}}/mosek/*/tools/platform/*/src/fusion_cxx && make install)
+      run: tar xvf mosektoolslinux64x86.tar.bz2 -C ${{github.workspace}} && (cd ${{github.workspace}}/mosek/10.0/tools/platform/linux64x86/src/fusion_cxx && make install)
 
     #- name: Install GLPK
     #  run: sudo apt-get install glpk-utils libglpk-dev
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/cmake-build-debug -DMOSEK_DIR=${{github.workspace}}/mosek/ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/cmake-build-debug -DMOSEK_DIR=${{github.workspace}}/mosek/10.0/tools/platform/linux64x86 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
