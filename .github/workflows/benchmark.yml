@@ -38,7 +38,7 @@ jobs:
       run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
 
     - name: Install Mosek license
-      run: echo ${{ secrets.MOSEK_LICENSE }} > mosek/mosek.lic
+      run: mkdir mosek && echo ${{ secrets.MOSEK_LICENSE }} > ${{github.workspace}}/mosek/mosek.lic
 
     - name: Solve instances with coluna
       run: ./run_coluna.sh ./GAP/data/${{ matrix.instances }}
@@ -99,7 +99,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
 
     - name: Install Mosek license
-      run: echo ${{ secrets.MOSEK_LICENSE }} > mosek/mosek.lic
+      run: mkdir mosek && echo ${{ secrets.MOSEK_LICENSE }} > ${{github.workspace}}/mosek/mosek.lic
 
     - name: Solve instances with idol
       run: ./run_idol.sh ./GAP/data/${{ matrix.instances }} ${{ matrix.arguments }}
