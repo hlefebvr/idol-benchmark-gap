@@ -35,8 +35,7 @@ jobs:
     - uses: julia-actions/setup-julia@latest
 
     - name: Install Mosek license
-      run: 'mkdir ${{github.workspace}}/mosek && echo $MOSEK_LICENSE | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
-      shell: bash
+      run: 'mkdir ${{github.workspace}}/mosek && echo "${MOSEK_LICENSE}" | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
       env:
         MOSEK_LICENSE: ${{secrets.MOSEK_LICENSE}}
 
