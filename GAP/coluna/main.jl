@@ -129,6 +129,8 @@ foreach(all_instances) do file
     instance = Instance(instance_folder * "/" * file)
     model = make_model(instance, 10 * 60)
 
+    println("Solving " * file)
+
     try
         optimize!(model)
 
@@ -141,6 +143,8 @@ foreach(all_instances) do file
         )
 
     catch (error)
+        println("FAILED.")
+
         write_output(
             file,
             instance,
