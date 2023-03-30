@@ -11,5 +11,5 @@ echo "Solving using idol"
 for FILE in $INSTANCES/*
 do
   echo "$(date) ${FILE} ${@}"
-  $BUILD_DIRECTORY/GAP/idol/benchmark_idol_gap $FILE $@
+  $BUILD_DIRECTORY/GAP/idol/benchmark_idol_gap $FILE $@ | exit
 done
