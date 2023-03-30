@@ -4,6 +4,7 @@ project(idol_benchmark)
 set(CMAKE_CXX_STANDARD 17)
 
 set(USE_MOSEK YES)
+set(USE_EIGEN YES)
 
 include(FetchContent)
 

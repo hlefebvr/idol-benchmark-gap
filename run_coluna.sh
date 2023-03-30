@@ -7,4 +7,4 @@ BUILD_DIRECTORY=./cmake-build-debug
 INSTANCES=$1
 
 echo "Solving using coluna"
-julia GAP/coluna/main.jl glpk $INSTANCES
+julia GAP/coluna/main.jl mosek $INSTANCES

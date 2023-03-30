@@ -6,12 +6,12 @@ if (length(ARGS) != 2)
     throw(ArgumentError("Expected argument \"solver\" \"instance_folder\""))
 end
 
-if (ARGS[1] == "glpk")
-    using GLPK;
+if (ARGS[1] == "mosek")
+    using Mosek;
 elseif (ARGS[1] == "gurobi")
     using Gurobi;
 else
-    throw(ErrorException("Allowed values for parameter 1: glpk, gurobi"));
+    throw(ErrorException("Allowed values for parameter 1: mosek, gurobi"));
 end
 
 instance_folder = ARGS[2]
@@ -64,7 +64,7 @@ function make_model(instance::Instance, time_limit::Int)
                 explorestrategy = Coluna.Algorithm.BestDualBoundStrategy()
             )
         ),
-        "default_optimizer" => GLPK.Optimizer # GLPK for the master & the subproblems
+        "default_optimizer" => Mosek.Optimizer # Mosek for the master & the subproblems
     );
 
     @axis(M_axis, instance.M);
