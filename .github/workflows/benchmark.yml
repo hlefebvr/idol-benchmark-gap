@@ -40,7 +40,7 @@ jobs:
     - uses: julia-actions/setup-julia@latest
 
     - name: Install JuMP, coluna.jl and MosekTools.jl
-      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
 
     - name: Solve instances with coluna
       run: ./run_coluna.sh ./GAP/data/${{ matrix.instances }}
