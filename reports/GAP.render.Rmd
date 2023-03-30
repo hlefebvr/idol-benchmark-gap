@@ -121,8 +121,7 @@ The results obtained using coluna can be found inside `results_GAP_coluna.csv`.
 We can now combine and print out the obtained computational results for each instance for each solver.
 
 ```{r}
-#results = rbind(idol, coluna)
-results = idol
+results = rbind(idol, coluna)
 ```
 
 
