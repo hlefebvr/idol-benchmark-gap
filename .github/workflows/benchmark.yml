@@ -26,6 +26,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install Mosek license
+      run: 'mkdir ${{github.workspace}}/mosek && echo "${MOSEK_LICENSE}" | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
+      env:
+        MOSEK_LICENSE: ${{secrets.MOSEK_LICENSE}}
+
     - name: Update apt-get
       run: sudo apt-get update
 
@@ -33,11 +38,6 @@ jobs:
     #  run: sudo apt-get install glpk-utils libglpk-dev
 
     - uses: julia-actions/setup-julia@latest
-
-    - name: Install Mosek license
-      run: 'mkdir ${{github.workspace}}/mosek && echo "${MOSEK_LICENSE}" | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
-      env:
-        MOSEK_LICENSE: ${{secrets.MOSEK_LICENSE}}
 
     - name: Install JuMP, coluna.jl and MosekTools.jl
       run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
@@ -101,8 +101,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
 
     - name: Install Mosek license
-      run: 'echo $MOSEK_LICENSE | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
-      shell: bash
+      run: 'echo "${MOSEK_LICENSE}" | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
       env:
         MOSEK_LICENSE: ${{secrets.MOSEK_LICENSE}}
 
