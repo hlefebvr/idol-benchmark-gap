@@ -86,12 +86,6 @@ jobs:
     - name: Install Eigen
       run: tar -xvf eigen*.tar.bz2 && rm eigen*.tar.bz2 && find . -depth -type d -name eigen-* -execdir mv {} ${{github.workspace}}/Eigen \;
 
-    - name: Debug
-      run: ls ${{github.workspace}}
-
-    - name: Debug 2
-      run: ls ${{github.workspace}}/Eigen
-
     - name: Download Mosek
       run: wget https://download.mosek.com/stable/10.0.40/mosektoolslinux64x86.tar.bz2
 
@@ -115,6 +109,9 @@ jobs:
 
     - name: Solve instances with idol
       run: ./run_idol.sh ./GAP/data/${{ matrix.instances }} ${{ matrix.arguments }}
+      shell: bash
+      env:
+        MOSEKLM_LICENSE_FILE: ${{github.workspace}}/mosek/mosek.lic
 
     - name: Rename results file
       run: mv results_GAP_idol.csv results_GAP_idol__$(uuidgen).csv
