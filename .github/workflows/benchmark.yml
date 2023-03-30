@@ -34,8 +34,11 @@ jobs:
 
     - uses: julia-actions/setup-julia@latest
 
-    - name: Install JuMP and coluna
+    - name: Install JuMP, coluna.jl and Mosek.jl
       run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("Mosek"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+
+    - name: Install Mosek license
+      run: echo ${{ secrets.MOSEK_LICENSE }} > mosek/mosek.lic
 
     - name: Solve instances with coluna
       run: ./run_coluna.sh ./GAP/data/${{ matrix.instances }}
@@ -89,7 +92,7 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
 
-    - name: Install mosek license
+    - name: Install Mosek license
       run: echo ${{ secrets.MOSEK_LICENSE }} > mosek/mosek.lic
 
     - name: Solve instances with idol
