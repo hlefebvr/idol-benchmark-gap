@@ -1,4 +1,4 @@
-# Benchmarking idol
+# Benchmarking branch-and-price implementations
 
 ![Maintained](https://img.shields.io/maintenance/yes/2023)
 ![GitHub issues](https://img.shields.io/github/issues-raw/hlefebvr/idol_benchmark)
@@ -8,6 +8,10 @@ This code contains the code for benchmarking different branch-and-price implemen
 Currently, the comparison is done between the [idol C++ library](https://github.com/hlefebvr/idol) and
 the [coluna.jl](https://github.com/atoptima/Coluna.jl) package. The external solver used to solve every
 involved sub-problem is [the open-source GLPK solver](https://www.gnu.org/software/glpk/).
+
+## Results
+
+- [On Generalized Assignment Problem (GAP) instances](https://hlefebvr.github.io/idol_benchmark/GAP.render.html).
 
 ## About Mosek usage
 
