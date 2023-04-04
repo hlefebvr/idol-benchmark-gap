@@ -2,7 +2,7 @@
 
 ![Maintained](https://img.shields.io/maintenance/yes/2023)
 ![GitHub issues](https://img.shields.io/github/issues-raw/hlefebvr/idol_benchmark)
-![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/hlefebvr/idol_benchmark/cmake.yml?branch=main)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/hlefebvr/idol_benchmark/benchmark.yml?branch=main)
 
 This code contains the code for benchmarking different branch-and-price implementations.
 Currently, the comparison is done between the [idol C++ library](https://github.com/hlefebvr/idol) and
