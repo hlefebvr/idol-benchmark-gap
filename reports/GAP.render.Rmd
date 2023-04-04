@@ -1,11 +1,7 @@
 ---
 title: Generalized Assignment Problem
 output:
-  html_document:
-    theme: cerulean
-    toc: true
-    toc_depth: 3
-    toc_float: true
+  rmdformats::readthedown
 ---
 
 ## About
@@ -278,11 +274,11 @@ make_table = function (dataset) {
   count = aggregate(dataset$time, by = dataset[,group_by], FUN = length)
   colnames(count) = c(group_by, "count")
   
-  unsolved = aggregate(dataset$time >= time_limit, by = dataset[,group_by], FUN = sum)
+  unsolved = aggregate(dataset$time >= time_limit & dataset$status != "ERROR", by = dataset[,group_by], FUN = sum)
   colnames(unsolved) = c(group_by, "unsolved")
   
   errors = aggregate(dataset$status == "ERROR", by = dataset[,group_by], FUN = sum)
-  colnames(errors) = c(group_by, "error")
+  colnames(errors) = c(group_by, "ERROR")
   
   solved_filter = dataset$time < time_limit
   times = aggregate(dataset[solved_filter,]$time, by = dataset[solved_filter,group_by], FUN = mean)
@@ -315,6 +311,7 @@ In this section, we evaluate the computational benefits obtained by idol's prima
 ```{r}
 performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 10), main = "With and without heuristics")
 performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 200), main = "With and without heuristics")
+```
 
 ### Branch and price
 
