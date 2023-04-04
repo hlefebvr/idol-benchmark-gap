@@ -1,11 +1,18 @@
 # Benchmarking idol
 
-## Github Actions
+![Maintained](https://img.shields.io/maintenance/yes/2023)
+![GitHub issues](https://img.shields.io/github/issues-raw/hlefebvr/idol_benchmark)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/hlefebvr/idol_benchmark/cmake.yml?branch=main)
 
-**WARNING:** Currently, benchmarking with coluna.jl is not fair and plays in favor of idol. This is
-because coluna.jl uses GLPK as external solver while idol uses Mosek. 
-See [coluna.jl issue 793](https://github.com/atoptima/Coluna.jl/issues/793).
+This code contains the code for benchmarking different branch-and-price implementations.
+Currently, the comparison is done between the [idol C++ library](https://github.com/hlefebvr/idol) and
+the [coluna.jl](https://github.com/atoptima/Coluna.jl) package. The external solver used to solve every
+involved sub-problem is [the open-source GLPK solver](https://www.gnu.org/software/glpk/).
 
-The benchmark is automatically done on GitHub Actions using the Mosek commercial solver. 
-Note that the Mosek license is stored as a GitHub secret (with base64 encoding `cat mosek.lic | base64` to 
+## About Mosek usage
+
+Currently, both GLPK and [Mosek](https://www.mosek.com/) are installed on our automated 
+GitHub Actions script. However, the Mosek solver is not currently in use for our benchmark
+but is planned to be used in near future.
+Note that the license is stored as a GitHub secret (with base64 encoding `cat mosek.lic | base64` to 
 avoid corruption) and cannot publicly be accessed.
