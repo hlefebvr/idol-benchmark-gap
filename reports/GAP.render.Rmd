@@ -67,7 +67,7 @@ time_limit = 10 * 60
 ```
 
 
-### Results obtained with Idol
+### Results obtained with idol
 
 We first start to read results obtained using idol, which can be found inside the `results_GAP_idol.csv` file (Note that this file can be obtained by running `cat results_GAP_idol__*.csv > results_GAP_idol.csv` after having extracted the `.zip` the artifact).
 
@@ -200,7 +200,7 @@ performance_profile = function (dataset, xlim = NULL, main = "Performance profil
     xlim = c(1, worst_ratio)
   }
   
-  par(mar = c(5,4,4,8))
+  par(mar = c(5,4,4,9))
   
   using_colors = NULL
   
@@ -227,7 +227,7 @@ performance_profile = function (dataset, xlim = NULL, main = "Performance profil
   # Set the plot legend
   legend(
     "topright",
-    inset=c(-.35, 0),
+    inset=c(-.30, 0),
     legend = solvers,
     lty = "solid",
     col = using_colors,
@@ -276,7 +276,7 @@ make_table = function (dataset) {
   colnames(unsolved) = c(group_by, "unsolved")
   
   errors = aggregate(dataset$status == "ERROR", by = dataset[,group_by], FUN = sum)
-  colnames(errors) = c(group_by, "ERROR")
+  colnames(errors) = c(group_by, "error")
   
   solved_filter = dataset$time < time_limit
   times = aggregate(dataset[solved_filter,]$time, by = dataset[solved_filter,group_by], FUN = mean)
@@ -290,10 +290,10 @@ make_table = function (dataset) {
 }
 ```
 
-For example, the following table gathers results from the Branch-and-Bound algorithm of idol.
+For example, the following table gathers results from the external solver.
 
 ```{r}
-Table = make_table(results[results$solver == "idol_bab",])
+Table = make_table(results[results$solver == "external",])
 ```
 
 ```{r echo = FALSE}
@@ -305,6 +305,15 @@ knitr::kable(Table)
 ### Branch-and-bound algorithm
 
 In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
+
+
+```{r}
+TableBaB = make_table(results[results$solver == "idol_bab",])
+```
+
+```{r echo = FALSE}
+knitr::kable(TableBaB)
+```
 
 ```{r}
 performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 10), main = "With and without heuristics")
@@ -322,14 +331,14 @@ performance_profile(results[results$solver != "external" & results$solver != "id
 
 
 ```{r}
-Table = make_table(results[results$solver_with_params == "idol_bap_h1_s0_f0_c1500_m1" | results$solver_with_params == "coluna",])
+Table = make_table(results[results$solver_with_params != "external" & results$solver_with_params != "idol_bab_h0" & results$solver_with_params != "idol_bab_h1",])
 ```
 
 ```{r echo = FALSE}
 knitr::kable(Table)
 ```
 
-We also have a look at pathological instances for idol where the execution time is $20%$ worst than coluna's time. This is to spot and study why this happens and potentially fix the issue.
+We also have a look at pathological instances for idol where the execution time is 20 \% worst than Coluna.jl's time. This is to spot and study why this happens and potentially fix the issue.
 
 ```{r}
 find_pathological_instances = function (dataset, solver_a, solver_b) {
@@ -342,6 +351,8 @@ find_pathological_instances = function (dataset, solver_a, solver_b) {
   result = merged[ merged$time.y > 1.2 * merged$time.x , c("instance", "time.x", "time.y", "status.x", "status.y")]
   
   colnames(result) = c("instance", paste0(solver_a, ".time"), paste0(solver_b, ".time"), paste0(solver_a, ".status"), paste0(solver_b, ".status"))
+  
+  rownames(result) = NULL
   
   return ( result )
 }
@@ -359,7 +370,7 @@ Comparing branching scheme (on master or on pricing problem) without smoothing, 
 
 ```{r}
 performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], xlim = c(1, 10), main = "Branching on master versus subproblem (up to 10)")
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], xlim = c(1, 200), main = "Branching on master versus subproblem (up to 200)")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], main = "Branching on master versus subproblem")
 ```
 
 #### Using artificial variables versus Farkas pricing
@@ -368,7 +379,7 @@ Comparing farkas pricing with artificial variables (phase I) using primal heuris
 
 ```{r}
 performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], xlim = c(1, 10), main = "Using artificial costs versus Farkas pricing (up to 10)")
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], xlim = c(1, 200), main = "Using artificial costs versus Farkas pricing (up to 200)")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], main = "Using artificial costs versus Farkas pricing")
 ```
 
 #### Smoothing factor
@@ -377,5 +388,5 @@ Comparing smoothing factors with artificial variables, master branching and prim
 
 ```{r}
 performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == 0,], xlim = c(1, 10), main = "Smoothing factor (up to 10)")
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == 0,], xlim = c(1, 200), main = "Smoothing factor (up to 200)")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == 0,], main = "Smoothing factor")
 ```
