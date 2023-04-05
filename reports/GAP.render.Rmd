@@ -146,8 +146,6 @@ colors = cbind(solvers, rainbow(nrow(solvers)))
 In this section, we first make sure that every solver reports the same optimal objective value for solved instances. We thus introduce function `compare_results` which takes as input a set of results and two solver names for which the results should be compared. The function returns the list of instances which for which the two methods report different objective values (with a tolerance of $10^{-3}$).
 
 ```{r}
-solved_results = results[results$time < time_limit,]
-
 compare_results = function (dataset, solver_a, solver_b) {
   
   results_a = dataset[dataset$solver_with_params == solver_a & dataset$time < time_limit,]
