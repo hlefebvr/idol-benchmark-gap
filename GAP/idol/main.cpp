@@ -51,15 +51,14 @@ int main(int t_argc, const char** t_argv) {
     Annotation<Ctr, unsigned int> decomposition(t_env, "decomposition", MasterId);
 
     // Variables
-    auto x = Var::array(t_env, Dim<2>(n_agents, n_jobs), 0., 1., Binary, "x");
-    model.add_array<Var, 2>(x);
+    auto x = model.add_vars(Dim<2>(n_agents, n_jobs), 0., 1., Binary, "x");
 
     // Objective function
     Expr objective = idol_Sum(
             i, Range(n_agents),
             idol_Sum(j, Range(n_jobs), t_instance.cost(i, j) * x[i][j])
     );
-    model.set(Attr::Obj::Expr, std::move(objective));
+    model.set_obj_expr(std::move(objective));
 
     // Capacity constraints
     for (unsigned int i = 0 ; i < n_agents ; ++i) {
@@ -148,9 +147,9 @@ int main(int t_argc, const char** t_argv) {
             with_farkas_pricing,
             clean_up,
             branching_on_master,
-            (SolutionStatus) model.get(Attr::Solution::Status),
-            (SolutionReason) model.get(Attr::Solution::Reason),
-            model.get(Attr::Solution::ObjVal),
+            model.get_status(),
+            model.get_reason(),
+            model.get_best_obj(),
             model.optimizer().time().count()
     );
 
