@@ -127,11 +127,13 @@ end
 foreach(all_instances) do file
 
     instance = Instance(instance_folder * "/" * file)
-    model = make_model(instance, 10 * 60)
 
     println("Solving " * file)
 
     try
+    
+        model = make_model(instance, 5 * 60)
+        
         optimize!(model)
 
         write_output(
