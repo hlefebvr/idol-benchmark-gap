@@ -140,7 +140,7 @@ foreach(all_instances) do file
             file,
             instance,
             string(termination_status(model)),
-            string(objective_value(model)),
+            termination_status(model) == OPTIMAL ? string(objective_value(model) : "0"),
             string(solve_time(model))
         )
 
