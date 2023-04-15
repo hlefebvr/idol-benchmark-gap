@@ -125,7 +125,7 @@ int main(int t_argc, const char** t_argv) {
                     .conditional(with_heuristics, [](auto& x){
                         x.with_callback(
                                 IntegerMasterHeuristic()
-                                    .with_solver(GLPK())
+                                    .with_optimizer(GLPK())
                             );
                     })
             );
