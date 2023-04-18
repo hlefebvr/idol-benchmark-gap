@@ -12,7 +12,7 @@
 void write_to_file(
         const std::string& t_path_to_instance,
         const Problems::GAP::Instance& t_instance,
-        const std::string& t_solver_name,
+        const std::string& t_optimizer_name,
         bool t_with_heuristics,
         double t_smoothing_factor,
         bool t_farkas_pricing,
@@ -31,7 +31,7 @@ void write_to_file(
     }
 
     file << t_path_to_instance << ','
-         << (t_solver_name == "external" ? t_solver_name : "idol_" + t_solver_name) << ','
+         << (t_optimizer_name == "external" ? t_optimizer_name : "idol_" + t_optimizer_name) << ','
          << t_with_heuristics << ','
          << t_smoothing_factor << ','
          << t_farkas_pricing << ','
