@@ -9,6 +9,27 @@
 #include "optimizers/dantzig-wolfe/DantzigWolfeDecomposition.h"
 #include "optimizers/column-generation/IntegerMasterHeuristic.h"
 
+///////////////////////////
+#include <cstdio>
+#include <execinfo.h>
+#include <csignal>
+#include <cstdlib>
+#include <unistd.h>
+
+void handler(int sig) {
+    void *array[10];
+    size_t size;
+
+    // get void*'s for all entries on the stack
+    size = backtrace(array, 10);
+
+    // print out all the frames to stderr
+    fprintf(stderr, "Error: signal %d:\n", sig);
+    backtrace_symbols_fd(array, size, STDERR_FILENO);
+    exit(1);
+}
+///////////////////////////
+
 bool parse_bool(const std::string& t_string) {
     if (t_string == "true") {
         return true;
@@ -20,6 +41,9 @@ bool parse_bool(const std::string& t_string) {
 }
 
 int main(int t_argc, const char** t_argv) {
+
+    signal(SIGSEGV, handler);
+    signal(SIGABRT, handler);
 
     if (t_argc < 3) {
         throw std::runtime_error("Expected arguments: path_to_instance method [with_heuristics] [smoothing_factor] [farkas_pricing] [branching_on_master]");
