@@ -50,7 +50,7 @@ int main(int t_argc, const char** t_argv) {
     }
 
     // Execution parameters
-    constexpr double time_limit = 5 * 60;
+    constexpr double time_limit = 10 * 60;
     const std::string path_to_instance = t_argv[1];
     const std::string method = t_argv[2];
 

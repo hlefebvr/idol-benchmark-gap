@@ -63,7 +63,7 @@ In this section, we start by reading the raw computational results stored in CSV
 
 
 ```{r}
-time_limit = 5 * 60
+time_limit = 10 * 60
 ```
 
 
@@ -175,11 +175,11 @@ for (solver_with_params in unique(results$solver_with_params)) {
 To compare the different methods, we use performance profiles as introduced in [Dolan et al. (2002)](https://link.springer.com/article/10.1007/s101070100263). The following function is used to compute and plot the performance profile of a given dataset.
 
 ```{r}
-performance_profile = function (dataset, xlim = NULL, main = "Performance profile") {
+performance_profile = function (dataset, xlim = NULL, main = "Performance profile", log = FALSE) {
   
   solvers = unique(dataset$solver_with_params)
   times = spread(dataset[,c("instance", "solver_with_params", "time")], key = solver_with_params, value = time)
-  #times = na.omit(times)
+  times = na.omit(times)
   times$time.best = apply(times[,-1], 1, FUN = min)
   
   ratios = times[,-ncol(times)][,-1] / times$time.best
@@ -207,8 +207,11 @@ performance_profile = function (dataset, xlim = NULL, main = "Performance profil
   index = 1
   for (solver in solvers) {
     
-    plot_function = if (index == 1) plot else lines
-    
+    plot_function = lines
+    if (index == 1) {
+      plot_function = if (log) function(...) plot(..., log = "x") else plot
+    }
+
     profile = ecdf(times[,paste0(solver, ".ratio")])
     
     using_color =  colors[colors$Solver == solver,2]
@@ -364,13 +367,20 @@ pathological_instances = find_pathological_instances(results, "coluna", "idol_ba
 paged_table(pathological_instances)
 ```
 
+## Only idol
+
+```{r}
+performance_profile(results[results$solver == "idol_bap",], main = "idol", log = TRUE)
+performance_profile(results[results$solver == "idol_bap",], xlim = c(1, 20), main = "idol (up to 20)", log = TRUE)
+```
+
 #### Branching on master versus branching on pricing
 
 Comparing branching scheme (on master or on pricing problem) without smoothing, using artificial variables (phase I) and primal heuristics.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], xlim = c(1, 10), main = "Branching on master versus subproblem (up to 10)")
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], main = "Branching on master versus subproblem")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], xlim = c(1, 10), main = "Branching on master versus subproblem (up to 10)", log = TRUE)
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], main = "Branching on master versus subproblem", log = TRUE)
 ```
 
 #### Using artificial variables versus Farkas pricing
@@ -378,8 +388,8 @@ performance_profile(results[results$solver == "idol_bap" & results$with_heuristi
 Comparing farkas pricing with artificial variables (phase I) using primal heuristics, master branching and no smoothing.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], xlim = c(1, 10), main = "Using artificial costs versus Farkas pricing (up to 10)")
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], main = "Using artificial costs versus Farkas pricing")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], xlim = c(1, 10), main = "Using artificial costs versus Farkas pricing (up to 10)", log = TRUE)
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], main = "Using artificial costs versus Farkas pricing", log = TRUE)
 ```
 
 #### Smoothing factor
