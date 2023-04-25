@@ -21,7 +21,7 @@ void handler(int sig) {
     size_t size;
 
     // get void*'s for all entries on the stack
-    size = backtrace(array, 10);
+    size = backtrace(array, 30);
 
     // print out all the frames to stderr
     fprintf(stderr, "Error: signal %d:\n", sig);
