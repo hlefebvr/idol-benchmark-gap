@@ -397,6 +397,6 @@ performance_profile(results[results$solver == "idol_bap" & results$with_heuristi
 Comparing smoothing factors with artificial variables, master branching and primal heuristics.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == 0,], xlim = c(1, 10), main = "Smoothing factor (up to 10)")
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == 0,], main = "Smoothing factor")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == TRUE,], xlim = c(1, 10), main = "Smoothing factor (up to 10)")
+performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == TRUE,], main = "Smoothing factor")
 ```
