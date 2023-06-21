@@ -55,18 +55,18 @@ function make_model(instance::Instance, time_limit::Int)
         "params" => Coluna.Params(
             solver = Coluna.Algorithm.TreeSearchAlgorithm(
                         conqueralg = Coluna.ColCutGenConquer(
-                                    stages = Coluna.ColumnGeneration[
-                                                Coluna.ColumnGeneration(
-                                                    smoothing_stabilization = 0.0,
-                                                    log_print_frequency = 0,
-                                                    cleanup_threshold = 1500
-                                                )
-                                            ],
+                                    colgen =
+                                            Coluna.ColumnGeneration(
+                                                smoothing_stabilization = 0.0,
+                                                log_print_frequency = 0,
+                                                cleanup_threshold = 1500
+                                            )
+                                            ,
                         #primal_heuristics = Coluna.Algorithm.ParameterizedHeuristic[],
                         max_nb_cut_rounds = 0
                 ),
                 timelimit = time_limit,
-                explorestrategy = Coluna.Algorithm.BestDualBoundStrategy()
+                explorestrategy = Coluna.TreeSearch.BestDualBoundStrategy()
             )
         ),
         "default_optimizer" => ExternalSolver # Mosek for the master & the subproblems
