@@ -63,7 +63,7 @@ In this section, we start by reading the raw computational results stored in CSV
 
 
 ```{r}
-time_limit = 10 * 60
+time_limit = 5 * 60
 ```
 
 
