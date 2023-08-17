@@ -88,8 +88,6 @@ function make_model(instance::Instance, time_limit::Int)
 
     specify!.(subproblems, lower_multiplicity = 0, upper_multiplicity = 1)
 
-    set_time_limit_sec(model, time_limit)
-
     return model
 
 end
