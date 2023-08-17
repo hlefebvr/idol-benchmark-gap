@@ -6,6 +6,8 @@
 #include "problems/generalized-assignment-problem/GAP_Instance.h"
 #include "errors/Exception.h"
 
+using namespace idol;
+
 int main(int t_argc, const char** t_argv) {
 
     if (t_argc != 2) {
