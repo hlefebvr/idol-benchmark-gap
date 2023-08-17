@@ -16,6 +16,8 @@
 #include <cstdlib>
 #include <unistd.h>
 
+using namespace idol;
+
 void handler(int sig) {
     void *array[10];
     size_t size;

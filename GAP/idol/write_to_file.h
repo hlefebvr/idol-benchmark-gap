@@ -11,15 +11,15 @@
 
 void write_to_file(
         const std::string& t_path_to_instance,
-        const Problems::GAP::Instance& t_instance,
+        const idol::Problems::GAP::Instance& t_instance,
         const std::string& t_optimizer_name,
         bool t_with_heuristics,
         double t_smoothing_factor,
         bool t_farkas_pricing,
         unsigned int t_clean_up,
         bool t_branching_on_master,
-        SolutionStatus t_status,
-        SolutionReason t_reason,
+        idol::SolutionStatus t_status,
+        idol::SolutionReason t_reason,
         double t_objective_value,
         double t_time
 ) {
