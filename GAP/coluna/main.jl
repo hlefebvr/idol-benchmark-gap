@@ -4,7 +4,7 @@ using DelimitedFiles;
 using Base.Threads;
 
 if (length(ARGS) != 2)
-    throw(ArgumentError("Expected argument \"solver\" \"instance_folder\""))
+    throw(ArgumentError("Expected argument \"solver\" \"instance\""))
 end
 
 if (ARGS[1] == "mosek")
@@ -21,7 +21,7 @@ else
     throw(ErrorException("Allowed values for parameter 1: mosek, glpk, gurobi"));
 end
 
-instance_folder = ARGS[2]
+file = ARGS[2]
 
 struct Instance
 
@@ -94,22 +94,19 @@ function make_model(instance::Instance, time_limit::Int)
 
 end
 
-all_instances = readdir(instance_folder)
-
-
 println("Solving an easy problem to warm up...")
 
-warmup_instance = instance_folder * "/" * all_instances[1]
+warmup_instance = "GAP/data/dummies/dummy"
 instance = Instance(warmup_instance)
 model = make_model(instance, 3600)
 optimize!(model)
 
-println("Switching to test bed...")
+println("Switching to instance...")
 
 function write_output(t_file::String, t_instance::Instance, t_status::String, t_objective::String, t_time::String)
     open("results_GAP_coluna.csv", "a+") do output
         write(output,
-            instance_folder * "/" * t_file * ","
+            t_file * ","
             * "coluna,"
             * "1," # with heuristic
             * "0," # smoothing
@@ -126,59 +123,35 @@ function write_output(t_file::String, t_instance::Instance, t_status::String, t_
     end;
 end
 
-foreach(all_instances) do file
+instance = Instance(file)
 
-    instance = Instance(instance_folder * "/" * file)
+println("Solving " * file)
 
-    println("Solving " * file)
+# try
 
-    try
+time_limit = 5 * 60
+
+model = make_model(instance, time_limit)
+
+optimize!(model)
     
-        model = make_model(instance, 5 * 60)
-        
-        task = @async begin
-            optimize!(model)
-        end
+write_output(
+    file,
+    instance,
+    string(termination_status(model)),
+    termination_status(model) == OPTIMAL ? string(objective_value(model)) : "0",
+    string(solve_time(model))
+)
 
-        count = 0
-        while true
+# catch (error)
+#    println("FAILED.")
 
-            sleep(1)
+#    write_output(
+#        file,
+#        instance,
+#        "ERROR",
+#        "0",
+#        "999999999999"
+#    )
+#end
 
-            # Check if the task is still running
-            if !isrunning(task)
-                write_output(
-                    file,
-                    instance,
-                    string(termination_status(model)),
-                    termination_status(model) == OPTIMAL ? string(objective_value(model)) : "0",
-                    string(solve_time(model))
-                )
-            elseif count > time_limit
-                Threads.interrupt(task)
-                write_output(
-                    file,
-                    instance,
-                    string(TIME_LIMIT),
-                    "0",
-                    time_limit
-                )
-                break
-            end
-
-            count = count + 1
-        end
-
-    catch (error)
-        println("FAILED.")
-
-        write_output(
-            file,
-            instance,
-            "ERROR",
-            "0",
-            "999999999999"
-        )
-    end
-
-end
