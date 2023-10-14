@@ -127,7 +127,7 @@ instance = Instance(file)
 
 println("Solving " * file)
 
-# try
+try
 
 time_limit = 5 * 60
 
@@ -143,15 +143,15 @@ write_output(
     string(solve_time(model))
 )
 
-# catch (error)
-#    println("FAILED.")
+catch (error)
+    println("FAILED.")
 
-#    write_output(
-#        file,
-#        instance,
-#        "ERROR",
-#        "0",
-#        "999999999999"
-#    )
-#end
+    write_output(
+        file,
+        instance,
+        "ERROR",
+        "0",
+        "999999999999"
+    )
+end
 
