@@ -1,6 +1,7 @@
 using JuMP;
 using BlockDecomposition, Coluna;
 using DelimitedFiles;
+using Base.Threads;
 
 if (length(ARGS) != 2)
     throw(ArgumentError("Expected argument \"solver\" \"instance_folder\""))
@@ -135,15 +136,38 @@ foreach(all_instances) do file
     
         model = make_model(instance, 5 * 60)
         
-        optimize!(model)
+        task = @async begin
+            optimize!(model)
+        end
 
-        write_output(
-            file,
-            instance,
-            string(termination_status(model)),
-            termination_status(model) == OPTIMAL ? string(objective_value(model)) : "0",
-            string(solve_time(model))
-        )
+        count = 0
+        while true
+
+            sleep(1)
+
+            # Check if the task is still running
+            if !isrunning(task)
+                write_output(
+                    file,
+                    instance,
+                    string(termination_status(model)),
+                    termination_status(model) == OPTIMAL ? string(objective_value(model)) : "0",
+                    string(solve_time(model))
+                )
+            elseif count > time_limit
+                Threads.@interrupt task
+                write_output(
+                    file,
+                    instance,
+                    string(TIME_LIMIT),
+                    "0",
+                    time_limit
+                )
+                break
+            end
+
+            count = count + 1
+        end
 
     catch (error)
         println("FAILED.")
