@@ -11,7 +11,8 @@ if (ARGS[1] == "mosek")
     ExternalSolver = Mosek.Optimizer;
 elseif (ARGS[1] == "glpk")
     using GLPK;
-    ExternalSolver = GLPK.Optimizer
+    # ExternalSolver = GLPK.Optimizer
+    ExternalSolver = JuMP.optimizer_with_attributes(GLPK.Optimizer, "tm_lim" => 5 * 60) 
 elseif (ARGS[1] == "gurobi")
     using Gurobi;
     ExternalSolver = Gurobi.Optimizer
