@@ -155,7 +155,7 @@ foreach(all_instances) do file
                     string(solve_time(model))
                 )
             elseif count > time_limit
-                Threads.@interrupt task
+                Threads.interrupt(task)
                 write_output(
                     file,
                     instance,
