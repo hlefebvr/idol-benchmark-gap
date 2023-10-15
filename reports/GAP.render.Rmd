@@ -109,7 +109,9 @@ coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
 colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "n_agents", "n_jobs", "objective_value", "time")
 coluna$solver_with_params = "coluna"
 
-coluna[coluna$status == "ERROR",]$time = time_limit
+if (sum(coluna$status == "ERROR") > 0) {
+  coluna[coluna$status == "ERROR",]$time = time_limit 
+}
 ```
 
 ### All
