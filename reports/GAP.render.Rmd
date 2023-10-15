@@ -1,7 +1,8 @@
 ---
 title: Generalized Assignment Problem
 output:
-  rmdformats::readthedown
+  rmdformats::readthedown:
+    toc: 3
 ---
 
 ## About
@@ -19,6 +20,7 @@ Last automatic run: `r format(Sys.time(), '%d/%m/%y %H:%M:%S')`.
 ```{r echo = FALSE}
 library(rmarkdown)
 library(tidyr)
+library(ggplot2)
 
 knitr::opts_chunk$set(
   out.width = "100%"
@@ -172,88 +174,42 @@ for (solver_with_params in unique(results$solver_with_params)) {
 
 ## Some helper functions
 
-### Performance profiles
+### ECDF
 
-To compare the different methods, we use performance profiles as introduced in [Dolan et al. (2002)](https://link.springer.com/article/10.1007/s101070100263). The following function is used to compute and plot the performance profile of a given dataset.
+To compare the different methods, we use ECDF of computation times. The following function is used to plot the ECDF of computation time of a given data set.
+Each solver keeping the same color in the whole document.
 
 ```{r}
-performance_profile = function (dataset, xlim = NULL, main = "Performance profile", log = FALSE) {
-  
-  solvers = unique(dataset$solver_with_params)
-  times = spread(dataset[,c("instance", "solver_with_params", "time")], key = solver_with_params, value = time)
-  times = na.omit(times)
-  times$time.best = apply(times[,-1], 1, FUN = min)
-  
-  ratios = times[,-ncol(times)][,-1] / times$time.best
-  colnames(ratios) = paste0(colnames(ratios), ".ratio")
-  
-  worst_ratio = max(ratios)
-  
-  times = cbind(times, ratios)
-  
-  for (solver in solvers) {
-    time_limit_filter = times[,solver] >= time_limit
-    if ( sum(time_limit_filter) > 0 ) {
-      times[time_limit_filter, paste0(solver, ".ratio")] = worst_ratio
-    }
-  }
-  
-  if (is.null(xlim)) {
-    xlim = c(1, worst_ratio)
-  }
-  
-  par(mar = c(5,4,4,9))
-  
-  using_colors = NULL
-  
-  index = 1
-  for (solver in solvers) {
-    
-    plot_function = lines
-    if (index == 1) {
-      plot_function = if (log) function(...) plot(..., log = "x") else plot
-    }
+# Define color palette
+colors <- scales::hue_pal()(length(unique(results$solver_with_params)))
 
-    profile = ecdf(times[,paste0(solver, ".ratio")])
-    
-    using_color =  colors[colors$Solver == solver,2]
-    using_colors = rbind(using_colors, using_color)
-    
-    plot_function(profile, xlim = xlim, ylim = c(0,1), lty = "solid", cex = 0, col = using_color, main = "", xlab = "", ylab = "")
-    
-    index = index + 1
+# Define a mapping solver_with_params[i] -> color[i]
+color_mapping = setNames(colors[1:length(solvers$Solver)], solvers$Solver)
+  
+# Define function plot_ecdf
+plot_ecdf = function (dataset, main = "ECDF", log = FALSE) {
+  
+  result = ggplot(dataset, aes(x = time, color = solver_with_params)) +
+    stat_ecdf(geom = "step") +
+    xlab("Total Time") +
+    ylab("ECDF") +
+    labs(title = main)  +
+    scale_color_manual(values = color_mapping) +
+    theme_minimal()
+  
+  if (log) {
+    result = result + scale_x_log10()
   }
   
-  # Set the plot title
-  title(main = main,
-        xlab = "Performance ratio",
-        ylab = "ECDF")
-  
-  # Set the plot legend
-  legend(
-    "topright",
-    inset=c(-.30, 0),
-    legend = solvers,
-    lty = "solid",
-    col = using_colors,
-    cex = .5,
-    xpd = TRUE,
-    bty = "n"
-  )
+  result
   
 }
 ```
 
-For instance, the following execution will plot a performance profile over all tested methods.
+For instance, the following execution will plot the ECDF over all tested methods.
 
 ```{r}
-performance_profile(results, xlim = c(1, 200))
-```
-
-Similarly, the following will compare specific methods together (in particular, external, idol's branch-and-bound, idol's branch-price-price with primal heuristics, artificial variables, branching on master with smoothing factor 0.3 and coluna).
-
-```{r}
-performance_profile(results[results$solver_with_params %in% c("external", "idol_bap_h1_s0_f0_c1500_m1", "coluna"),], xlim = c(1, 200), main = "External solver, Coluna, idol")
+plot_ecdf(results)
 ```
 
 ### Summary tables
@@ -307,10 +263,16 @@ knitr::kable(Table)
 
 ## Computational results
 
-### Branch-and-bound algorithm
+### Branch-and-bound algorithm with idol
 
 In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
 
+```{r}
+plot_ecdf(
+  results[results$solver == "idol_bab",], 
+  main = "Branch-and-bound: with v.s. without heuristics"
+)
+```
 
 ```{r}
 TableBaB = make_table(results[results$solver == "idol_bab",])
@@ -320,23 +282,23 @@ TableBaB = make_table(results[results$solver == "idol_bab",])
 knitr::kable(TableBaB)
 ```
 
+### Branch-and-price
+
+#### Comparing with Coluna.jl
+
 ```{r}
-performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 10), main = "With and without heuristics")
-performance_profile(results[results$solver == "idol_bab",], xlim = c(1, 200), main = "With and without heuristics")
+plot_ecdf(
+  results[results$solver != "external" & results$solver != "idol_bab",],
+  main = "idol versus Coluna.jl",
+  log = TRUE
+)
 ```
 
-### Branch and price
-
-#### With coluna
 
 ```{r}
-performance_profile(results[results$solver != "external" & results$solver != "idol_bab",], xlim = c(1, 10), main = "idol versus coluna (up to 10)")
-performance_profile(results[results$solver != "external" & results$solver != "idol_bab",], xlim = c(1, 200), main = "idol versus coluna (up to 200)")
-```
-
-
-```{r}
-Table = make_table(results[results$solver_with_params != "external" & results$solver_with_params != "idol_bab_h0" & results$solver_with_params != "idol_bab_h1",])
+Table = make_table(
+  results[results$solver_with_params != "external" & results$solver_with_params != "idol_bab_h0" & results$solver_with_params != "idol_bab_h1",]
+)
 ```
 
 ```{r echo = FALSE}
@@ -369,36 +331,46 @@ pathological_instances = find_pathological_instances(results, "coluna", "idol_ba
 paged_table(pathological_instances)
 ```
 
-## Only idol
+#### Comparing different settings of idol
+
+##### All different settings of idol
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap",], main = "idol", log = TRUE)
-performance_profile(results[results$solver == "idol_bap",], xlim = c(1, 20), main = "idol (up to 20)", log = TRUE)
+plot_ecdf(results[results$solver == "idol_bap",], main = "idol", log = TRUE)
 ```
 
-#### Branching on master versus branching on pricing
+##### Branching strategy: on master v.s. on pricing
 
 Comparing branching scheme (on master or on pricing problem) without smoothing, using artificial variables (phase I) and primal heuristics.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], xlim = c(1, 10), main = "Branching on master versus subproblem (up to 10)", log = TRUE)
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], main = "Branching on master versus subproblem", log = TRUE)
+plot_ecdf(
+  results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], 
+  main = "Branching strategy: on master v.s. on pricing", 
+  log = TRUE
+)
 ```
 
-#### Using artificial variables versus Farkas pricing
+##### Handling infeasibility: slack variables v.s. Farkas pricing
 
-Comparing farkas pricing with artificial variables (phase I) using primal heuristics, master branching and no smoothing.
+Comparing Farkas pricing with artificial variables (phase I) using primal heuristics, master branching and no smoothing.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], xlim = c(1, 10), main = "Using artificial costs versus Farkas pricing (up to 10)", log = TRUE)
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,], main = "Using artificial costs versus Farkas pricing", log = TRUE)
+plot_ecdf(
+  results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,],
+  main = "Handling Infeasibiliy: slack variables v.s. Farkas pricing", 
+  log = TRUE
+)
 ```
 
-#### Smoothing factor
+##### Stabilization by smoothing dual values
 
 Comparing smoothing factors with artificial variables, master branching and primal heuristics.
 
 ```{r}
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == TRUE,], xlim = c(1, 10), main = "Smoothing factor (up to 10)")
-performance_profile(results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == TRUE,], main = "Smoothing factor")
+plot_ecdf(
+  results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == TRUE,], 
+  main = expression("Stabilization by smoothing dual values: different values for alpha"), 
+  log = TRUE
+)
 ```
