@@ -6,7 +6,7 @@
 
 This code contains the code for benchmarking different branch-and-price implementations.
 Currently, the comparison is done between the [idol C++ library](https://github.com/hlefebvr/idol) and
-the [coluna.jl](https://github.com/atoptima/Coluna.jl) package. The external solver used to solve every
+the [Coluna.jl](https://github.com/atoptima/Coluna.jl) package. The external solver used to solve every
 involved sub-problem is [the open-source GLPK solver](https://www.gnu.org/software/glpk/).
 
 ## Results
