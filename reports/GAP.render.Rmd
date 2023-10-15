@@ -118,6 +118,7 @@ if (sum(coluna$status == "ERROR") > 0) {
 if (sum(coluna$status == "TIME_LIMIT") > 0) {
   coluna[coluna$status == "TIME_LIMIT",]$time = time_limit 
 }
+
 ```
 
 ### All
@@ -230,7 +231,7 @@ make_table = function (dataset) {
   
   rownames(dataset) = NULL
   
-  count = aggregate(dataset$time, by = dataset[,group_by], FUN = length)
+  count = aggregate(dataset$instance, by = dataset[,group_by], FUN = length)
   colnames(count) = c(group_by, "count")
   
   unsolved = aggregate(dataset$time >= time_limit & dataset$status != "ERROR", by = dataset[,group_by], FUN = sum)

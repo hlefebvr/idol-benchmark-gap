@@ -68,7 +68,9 @@ function make_model(instance::Instance, time_limit::Int)
                         max_nb_cut_rounds = 0
                 ),
                 timelimit = time_limit,
-                explorestrategy = Coluna.TreeSearch.BestDualBoundStrategy()
+                explorestrategy = Coluna.TreeSearch.BestDualBoundStrategy(),
+                opt_atol::Float64 = 1e-10,
+                opt_rtol::Float64 = 1e-4
             )
         ),
         "default_optimizer" => ExternalSolver # Mosek for the master & the subproblems
