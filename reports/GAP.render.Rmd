@@ -114,6 +114,10 @@ coluna$solver_with_params = "coluna"
 if (sum(coluna$status == "ERROR") > 0) {
   coluna[coluna$status == "ERROR",]$time = time_limit 
 }
+
+if (sum(coluna$status == "TIME_LIMIT") > 0) {
+  coluna[coluna$status == "TIME_LIMIT",]$time = time_limit 
+}
 ```
 
 ### All
@@ -139,10 +143,6 @@ colnames(solvers) = "Solver"
 
 ```{r echo = FALSE}
 knitr::kable(solvers)
-```
-
-```{r}
-colors = cbind(solvers, rainbow(nrow(solvers)))
 ```
 
 ## Checking results
