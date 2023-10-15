@@ -7,13 +7,13 @@ output:
 
 ## About
 
-This page contains an automatic benchmark between the C++ library [idol](https://github.com/hlefebvr/idol) and the Julia package [coluna.jl](https://github.com/atoptima/Coluna.jl)
+This page contains an automatic benchmark between the C++ library [idol](https://github.com/hlefebvr/idol) and the Julia package [Coluna.jl](https://github.com/atoptima/Coluna.jl)
 to test their implementation of the [Branch-and-Price algorithm](https://en.wikipedia.org/wiki/Branch_and_price) for solving instances of the [Generalized Assignment Problem](https://en.wikipedia.org/wiki/Generalized_assignment_problem).
 
-The results presented here are automatically generated using GitHub Actions and R with Rmarkdown. Note that the experiments themselves were run on GitHub Actions for which the code
+The results presented here are automatically generated using GitHub Actions and R with Rmarkdown. Note that the experiments themselves are run with GitHub Actions for which the code
 is fully public and can be found [here for implementation details](https://github.com/hlefebvr/idol_benchmark) and [here for GitHub Actions configuration](https://github.com/hlefebvr/idol_benchmark/blob/main/.github/workflows/benchmark.yml).
 
-The experiments were conducted on a GitHub-hosted runner with an `ubuntu-latest` virtual machine with two CPU cores (x86_64), 7 GB of RAM and 14 GB of SSD space (see [hardware specifications here](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners)).
+The experiments were conducted on a free GitHub-hosted runner with an `ubuntu-latest` virtual machine with two CPU cores (x86_64), 7 GB of RAM and 14 GB of SSD space (see [hardware specifications here](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners)).
 
 Last automatic run: `r format(Sys.time(), '%d/%m/%y %H:%M:%S')`.
 
