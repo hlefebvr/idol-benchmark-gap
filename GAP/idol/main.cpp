@@ -7,7 +7,7 @@
 #include "optimizers/branch-and-bound/node-selection-rules/factories/BestBound.h"
 #include "optimizers/branch-and-bound/branching-rules/factories/MostInfeasible.h"
 #include "optimizers/dantzig-wolfe/DantzigWolfeDecomposition.h"
-#include "optimizers/column-generation/IntegerMasterHeuristic.h"
+#include "optimizers/column-generation/IntegerMaster.h"
 
 ///////////////////////////
 #include <cstdio>
@@ -150,7 +150,7 @@ int main(int t_argc, const char** t_argv) {
                     .with_time_limit(time_limit)
                     .conditional(with_heuristics, [](auto& x){
                         x.with_callback(
-                                IntegerMasterHeuristic()
+                                Heuristics::IntegerMaster()
                                     .with_optimizer(GLPK())
                             );
                     })
