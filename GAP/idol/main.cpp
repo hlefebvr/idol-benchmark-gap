@@ -8,6 +8,7 @@
 #include "optimizers/branch-and-bound/branching-rules/factories/MostInfeasible.h"
 #include "optimizers/dantzig-wolfe/DantzigWolfeDecomposition.h"
 #include "optimizers/column-generation/IntegerMaster.h"
+#include "optimizers/callbacks/RENS.h"
 
 ///////////////////////////
 #include <cstdio>
@@ -119,6 +120,18 @@ int main(int t_argc, const char** t_argv) {
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
                     .with_time_limit(time_limit)
+                    .conditional(with_heuristics, [](auto& x) {
+                        x.with_callback(
+                                Heuristics::RENS()
+                                    .with_optimizer(
+                                        BranchAndBound()
+                                                .with_node_optimizer(GLPK::ContinuousRelaxation())
+                                                .with_branching_rule(MostInfeasible())
+                                                .with_node_selection_rule(BestBound())
+                                                .with_time_limit(time_limit)
+                                    )
+                        );
+                    })
             );
 
     } else if (method == "bap") {
