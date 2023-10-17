@@ -169,8 +169,6 @@ int main(int t_argc, const char** t_argv) {
                             .with_branching_on_master(branching_on_master)
                             .with_column_pool_clean_up(clean_up, .75)
                             .with_farkas_pricing(with_farkas_pricing)
-                            .with_log_level(Trace, Yellow)
-                            .with_log_frequency(1)
                     )
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
@@ -181,8 +179,6 @@ int main(int t_argc, const char** t_argv) {
                                     .with_optimizer(GLPK())
                             );
                     })
-                    .with_log_frequency(1)
-                    .with_log_level(Trace, Blue)
             );
 
     } else {
