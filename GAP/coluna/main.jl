@@ -90,7 +90,7 @@ function make_model(instance::Instance, time_limit::Int)
     master = getmaster(decomposition)
     subproblems = getsubproblems(decomposition)
 
-    specify!.(subproblems, lower_multiplicity = 0, upper_multiplicity = 1)
+    specify!.(subproblems, lower_multiplicity = 1, upper_multiplicity = 1)
 
     return model
 
@@ -129,14 +129,16 @@ instance = Instance(file)
 
 println("Solving " * file)
 
-try
+#try
 
 time_limit = 5 * 60
 
 model = make_model(instance, time_limit)
 
 optimize!(model)
-    
+
+println(solution_summary(model))
+
 write_output(
     file,
     instance,
@@ -145,15 +147,15 @@ write_output(
     string(solve_time(model))
 )
 
-catch (error)
-    println("FAILED.")
-
-    write_output(
-        file,
-        instance,
-        "ERROR",
-        "0",
-        "999999999999"
-    )
-end
+#catch (error)
+#    println("FAILED.")
+#
+#    write_output(
+#        file,
+#        instance,
+#        "ERROR",
+#        "0",
+#        "999999999999"
+#    )
+#end
 
