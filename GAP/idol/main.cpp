@@ -181,6 +181,8 @@ int main(int t_argc, const char** t_argv) {
 
     model.optimize();
 
+    std::cout << "Time: " << model.optimizer().time().count() << " s" << std::endl;
+
     write_to_file(
             path_to_instance,
             t_instance,
