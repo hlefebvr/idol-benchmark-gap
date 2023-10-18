@@ -198,7 +198,5 @@ int main(int t_argc, const char** t_argv) {
             model.optimizer().time().count()
     );
 
-    std::cout << "OK." << std::endl;
-
     return 0;
 }
