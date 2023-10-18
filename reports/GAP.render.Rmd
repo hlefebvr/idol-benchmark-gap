@@ -340,7 +340,7 @@ find_pathological_instances = function (dataset, solver_a, solver_b) {
   return ( result )
 }
 
-pathological_instances = find_pathological_instances(results, "coluna", "idol_bap_h1_s0_f0_c1500_m1")
+pathological_instances = find_pathological_instances(results, "coluna", "idol_bap_h1_s0_f1_c1500_m1")
 ```
 
 ```{r}
