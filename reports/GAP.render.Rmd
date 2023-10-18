@@ -116,7 +116,11 @@ if (sum(coluna$status == "ERROR") > 0) {
 }
 
 if (sum(coluna$status == "TIME_LIMIT") > 0) {
-  coluna[coluna$status == "TIME_LIMIT",]$time = time_limit 
+  coluna[coluna$status == "TIME_LIMIT",]$time = time_limit
+}
+
+if (sum(coluna$status == "INFEASIBLE") > 0) {
+  coluna[coluna$status == "INFEASIBLE",]$objective_value = 1e+20
 }
 
 ```
@@ -127,6 +131,10 @@ We can now combine and print out the obtained computational results for each ins
 
 ```{r}
 results = rbind(idol, coluna)
+
+if (sum(results$time > time_limit) > 0) {
+  results[results$time > time_limit,]$time = time_limit
+}
 ```
 
 
@@ -165,12 +173,19 @@ compare_results = function (dataset, solver_a, solver_b) {
 Then, we compare all solvers together.
 
 ```{r}
+mismatches = NULL
+
 for (solver_with_params in unique(results$solver_with_params)) {
   mismatch = compare_results(results, "external", solver_with_params)
   if (nrow(mismatch) > 0) {
-    paged_table(mismatch)
+    print(paste0("There was mismatched instances between external solver and ", solver_with_params))
+    mismatch = mismatch[,c("instance", "solver_with_params.x", "solver_with_params.y", "status.x", "status.y", "time.x", "time.y", "objective_value.x", "objective_value.y")]
+    rownames(mismatch) = NULL
+    mismatches = rbind(mismatches, mismatch)
   }
 }
+
+paged_table(mismatches)
 ```
 
 ## Some helper functions
@@ -329,7 +344,7 @@ pathological_instances = find_pathological_instances(results, "coluna", "idol_ba
 ```
 
 ```{r}
-paged_table(pathological_instances)
+knitr::kable(pathological_instances)
 ```
 
 #### Comparing different settings of idol
