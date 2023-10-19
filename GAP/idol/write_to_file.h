@@ -5,9 +5,9 @@
 #ifndef IDOL_BENCHMARK_WRITE_TO_FILE_H
 #define IDOL_BENCHMARK_WRITE_TO_FILE_H
 
-#include <problems/generalized-assignment-problem/GAP_Instance.h>
+#include <idol/problems/generalized-assignment-problem/GAP_Instance.h>
 #include <fstream>
-#include "modeling/solutions/types.h"
+#include <idol/modeling/solutions/types.h>
 
 void write_to_file(
         const std::string& t_path_to_instance,

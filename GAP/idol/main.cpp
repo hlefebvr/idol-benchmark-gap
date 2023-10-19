@@ -1,16 +1,16 @@
 #include <iostream>
 
-#include "modeling.h"
-#include "solvers.h"
-#include "problems/generalized-assignment-problem/GAP_Instance.h"
+#include <idol/modeling.h>
+#include <idol/solvers.h>
+#include <idol/problems/generalized-assignment-problem/GAP_Instance.h>
 #include "write_to_file.h"
-#include "optimizers/branch-and-bound/node-selection-rules/factories/BestBound.h"
-#include "optimizers/branch-and-bound/branching-rules/factories/MostInfeasible.h"
-#include "optimizers/branch-and-bound/branching-rules/factories/LeastInfeasible.h"
-#include "optimizers/dantzig-wolfe/DantzigWolfeDecomposition.h"
-#include "optimizers/column-generation/IntegerMaster.h"
-#include "optimizers/callbacks/RENS.h"
-#include "optimizers/callbacks/LocalBranching.h"
+#include <idol/optimizers/branch-and-bound/node-selection-rules/factories/BestBound.h>
+#include <idol/optimizers/branch-and-bound/branching-rules/factories/MostInfeasible.h>
+#include <idol/optimizers/branch-and-bound/branching-rules/factories/LeastInfeasible.h>
+#include <idol/optimizers/dantzig-wolfe/DantzigWolfeDecomposition.h>
+#include <idol/optimizers/column-generation/IntegerMaster.h>
+#include <idol/optimizers/callbacks/RENS.h>
+#include <idol/optimizers/callbacks/LocalBranching.h>
 
 ///////////////////////////
 #include <cstdio>
@@ -122,6 +122,7 @@ int main(int t_argc, const char** t_argv) {
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
                     .with_time_limit(time_limit)
+                    .with_subtree_depth(0)
                     .conditional(with_heuristics, [](auto& x) {
                         x.with_callback(
                                 Heuristics::RENS()
