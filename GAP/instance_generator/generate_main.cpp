@@ -3,8 +3,8 @@
 //
 #include <iostream>
 #include <fstream>
-#include "problems/generalized-assignment-problem/GAP_Instance.h"
-#include "errors/Exception.h"
+#include "idol/problems/generalized-assignment-problem/GAP_Instance.h"
+#include "idol/errors/Exception.h"
 
 using namespace idol;
 
