@@ -1,21 +1,8 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.10)
 project(idol_benchmark)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(USE_MOSEK YES)
-set(USE_EIGEN YES)
-set(USE_GLPK YES)
-set(USE_GUROBI NO)
-
-include(FetchContent)
-
-FetchContent_Declare(
-        idol
-        GIT_REPOSITORY https://github.com/hlefebvr/idol.git
-        GIT_TAG        origin/main
-)
-
-FetchContent_MakeAvailable(idol)
+find_package(idol REQUIRED)
 
 add_subdirectory(GAP)

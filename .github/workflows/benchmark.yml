@@ -20,16 +20,16 @@ jobs:
       matrix:
         instances:
           - "n2"
-          - "n3"
-          - "n4"
+          # - "n3"
+          # - "n4"
           #- "n5"
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Mosek license
-      run: 'mkdir ${{github.workspace}}/mosek && echo "${MOSEK_LICENSE}" | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
-      env:
-        MOSEK_LICENSE: ${{secrets.MOSEK_LICENSE}}
+    #- name: Install Mosek license
+    #  run: 'mkdir ${{github.workspace}}/mosek && echo "${MOSEK_LICENSE}" | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
+    #  env:
+    #    MOSEK_LICENSE: ${{secrets.MOSEK_LICENSE}}
 
     - name: Update apt-get
       run: sudo apt-get update
@@ -39,10 +39,11 @@ jobs:
 
     - uses: julia-actions/setup-julia@latest
 
-    - name: Install JuMP, coluna.jl and MosekTools.jl
-      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+    - name: Install JuMP, Coluna.jl and MosekTools.jl
+      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+      # run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
 
-    - name: Solve instances with coluna
+    - name: Solve instances with Coluna.jl
       run: ./run_coluna.sh ./GAP/data/${{ matrix.instances }}
 
     - name: Rename results file
@@ -69,8 +70,8 @@ jobs:
           - "bap true .8 true true"
         instances:
           - "n2"
-          - "n3"
-          - "n4"
+          # - "n3"
+          # - "n4"
           #- "n5"
           #- "n10"
     steps:
@@ -82,34 +83,35 @@ jobs:
     - name: Install GLPK
       run: sudo apt-get install glpk-utils libglpk-dev
 
-    - name: Download Eigen
-      run: wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
+    #- name: Download Eigen
+      #  run: wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
 
-    - name: Install Eigen
-      run: tar -xvf eigen*.tar.bz2 && rm eigen*.tar.bz2 && find . -depth -type d -name eigen-* -execdir mv {} ${{github.workspace}}/Eigen \;
+    #- name: Install Eigen
+    #  run: tar -xvf eigen*.tar.bz2 && rm eigen*.tar.bz2 && find . -depth -type d -name eigen-* -execdir mv {} ${{github.workspace}}/Eigen \;
 
-    - name: Download Mosek
-      run: wget https://download.mosek.com/stable/10.0.40/mosektoolslinux64x86.tar.bz2
+    #- name: Download Mosek
+    #  run: wget https://download.mosek.com/stable/10.0.40/mosektoolslinux64x86.tar.bz2
 
-    - name: Install Mosek
-      run: tar -xvf mosektoolslinux64x86.tar.bz2 -C ${{github.workspace}} && (cd ${{github.workspace}}/mosek/10.0/tools/platform/linux64x86/src/fusion_cxx && make install)
+    #- name: Install Mosek
+    #  run: tar -xvf mosektoolslinux64x86.tar.bz2 -C ${{github.workspace}} && (cd ${{github.workspace}}/mosek/10.0/tools/platform/linux64x86/src/fusion_cxx && make install)
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/cmake-build-debug -DMOSEK_DIR=${{github.workspace}}/mosek/10.0/tools/platform/linux64x86 -DEIGEN_DIR=${{github.workspace}}/Eigen -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/cmake-build-debug -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    # run: cmake -B ${{github.workspace}}/cmake-build-debug -DMOSEK_DIR=${{github.workspace}}/mosek/10.0/tools/platform/linux64x86 -DEIGEN_DIR=${{github.workspace}}/Eigen -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/cmake-build-debug --config ${{env.BUILD_TYPE}}
 
-    - name: Install Mosek license
-      run: 'echo "${MOSEK_LICENSE}" | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
-      env:
-        MOSEK_LICENSE: ${{secrets.MOSEK_LICENSE}}
+    #- name: Install Mosek license
+    #  run: 'echo "${MOSEK_LICENSE}" | base64 --decode > ${{github.workspace}}/mosek/mosek.lic'
+    #  env:
+    #    MOSEK_LICENSE: ${{secrets.MOSEK_LICENSE}}
 
     - name: Solve instances with idol
       run: ./run_idol.sh ./GAP/data/${{ matrix.instances }} ${{ matrix.arguments }}
       shell: bash
-      env:
-        MOSEKLM_LICENSE_FILE: ${{github.workspace}}/mosek/mosek.lic
+      #env:
+      #  MOSEKLM_LICENSE_FILE: ${{github.workspace}}/mosek/mosek.lic
 
     - name: Rename results file
       run: mv results_GAP_idol.csv results_GAP_idol__$(uuidgen).csv

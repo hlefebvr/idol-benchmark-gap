@@ -11,5 +11,5 @@ echo "Solving using idol"
 for FILE in $INSTANCES/*
 do
   echo "$(date) ${FILE} ${@}"
-  timeout 300s $BUILD_DIRECTORY/GAP/idol/benchmark_idol_gap $FILE $@ || echo "${FILE},idol,1,0,0,500,1,TIME_LIMIT,,,,," >> "results_GAP_idol.csv"
+  $BUILD_DIRECTORY/GAP/idol/benchmark_idol_gap $FILE $@
 done

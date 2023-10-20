@@ -109,16 +109,13 @@ function write_output(t_file::String, t_instance::Instance, t_status::String, t_
     open("results_GAP_coluna.csv", "a+") do output
         write(output,
             t_file * ","
-            * "coluna,"
+            * "Coluna.jl,"
             * "1," # with heuristic
             * "0," # smoothing
             * "0," # farkas
             * "500," # cleanup
             * "1," # branching on master
             * t_status * ","
-            * ","
-            * string(length(t_instance.M)) * ","
-            * string(length(t_instance.J)) * ","
             * t_objective * ","
             * t_time
             * "\n")

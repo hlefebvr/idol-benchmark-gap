@@ -37,8 +37,6 @@ void write_to_file(
          << t_farkas_pricing << ','
          << t_clean_up << ','
          << t_branching_on_master << ','
-         << t_instance.n_agents() << ','
-         << t_instance.n_jobs() << ','
          << t_status << ','
          << t_reason << ','
          << t_objective_value << ','
