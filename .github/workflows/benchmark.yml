@@ -20,8 +20,8 @@ jobs:
       matrix:
         instances:
           - "dummies"
-          # - "n2"
-          # - "n3"
+          - "n2"
+          - "n3"
           # - "n4"
           #- "n5"
     steps:
@@ -71,8 +71,8 @@ jobs:
           - "bap true .8 true true"
         instances:
           - "dummies"
-          # - "n2"
-          # - "n3"
+          - "n2"
+          - "n3"
           # - "n4"
           #- "n5"
           #- "n10"
