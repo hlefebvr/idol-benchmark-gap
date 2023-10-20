@@ -83,6 +83,9 @@ jobs:
     - name: Install GLPK
       run: sudo apt-get install glpk-utils libglpk-dev
 
+    - name: Install idol
+      run: git clone https://github.com/hlefebvr/idol.git && cd idol && cmake -DUSE_GLPK=YES . && make && sudo make install
+
     #- name: Download Eigen
       #  run: wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
 
