@@ -19,7 +19,8 @@ jobs:
     strategy:
       matrix:
         instances:
-          - "n2"
+          - "dummies"
+          # - "n2"
           # - "n3"
           # - "n4"
           #- "n5"
@@ -69,7 +70,8 @@ jobs:
           - "bap true .3 true true"
           - "bap true .8 true true"
         instances:
-          - "n2"
+          - "dummies"
+          # - "n2"
           # - "n3"
           # - "n4"
           #- "n5"
