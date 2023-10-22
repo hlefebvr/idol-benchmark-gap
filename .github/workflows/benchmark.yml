@@ -86,7 +86,7 @@ jobs:
       run: mkdir HiGHS/build && cd HiGHS/build && cmake .. && make && sudo make install
 
     - name: Install idol
-      run: git clone https://github.com/hlefebvr/idol.git && cd idol && git checkout dev && cmake -DUSE_GLPK=YES . && make && sudo make install
+      run: git clone https://github.com/hlefebvr/idol.git && cd idol && git checkout -- dev && cmake -DUSE_GLPK=YES . && make && sudo make install
 
     #- name: Download Eigen
       #  run: wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
