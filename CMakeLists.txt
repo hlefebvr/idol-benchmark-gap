@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(idol_benchmark)
+project(idol_benchmark_gap)
 
 set(CMAKE_CXX_STANDARD 17)
 
