@@ -17,8 +17,11 @@ elseif (ARGS[1] == "glpk")
 elseif (ARGS[1] == "gurobi")
     using Gurobi;
     ExternalSolver = Gurobi.Optimizer
+elseif (ARGS[1] == "highs")
+    using HiGHS;
+    ExternalSolver = HiGHS.Optimizer
 else
-    throw(ErrorException("Allowed values for parameter 1: mosek, glpk, gurobi"));
+    throw(ErrorException("Allowed values for parameter 1: mosek, glpk, highs, gurobi"));
 end
 
 file = ARGS[2]

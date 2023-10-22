@@ -35,13 +35,10 @@ jobs:
     - name: Update apt-get
       run: sudo apt-get update
 
-    - name: Install GLPK
-      run: sudo apt-get install glpk-utils libglpk-dev
-
     - uses: julia-actions/setup-julia@latest
 
     - name: Install JuMP, Coluna.jl and MosekTools.jl
-      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("HiGHS"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
       # run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
 
     - name: Solve instances with Coluna.jl
@@ -82,8 +79,11 @@ jobs:
     - name: Update apt-get
       run: sudo apt-get update
 
-    - name: Install GLPK
-      run: sudo apt-get install glpk-utils libglpk-dev
+    - name: Download HiGHS
+      run: git clone https://github.com/ERGO-Code/HiGHS.git
+
+    - name: Install HiGHS
+      run: mkdir HiGHS/build && cd HiGHS/build && cmake .. && make && sudo make install
 
     - name: Install idol
       run: git clone https://github.com/hlefebvr/idol.git && cd idol && cmake -DUSE_GLPK=YES . && make && sudo make install
