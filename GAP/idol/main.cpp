@@ -155,7 +155,7 @@ int main(int t_argc, const char** t_argv) {
                 BranchAndBound()
                     .with_node_optimizer(
                         DantzigWolfeDecomposition(decomposition)
-                            .with_master_optimizer(HiGHS::ContinuousRelaxation())
+                            .with_master_optimizer(HiGHS::ContinuousRelaxation().with_infeasible_or_unbounded_info(true))
                             .with_pricing_optimizer(HiGHS())
                             .with_dual_price_smoothing_stabilization(smoothing_factor)
                             .with_branching_on_master(branching_on_master)
