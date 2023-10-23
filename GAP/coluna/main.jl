@@ -84,7 +84,7 @@ function make_model(instance::Instance, time_limit::Int)
     model = BlockModel(coluna);
 
     @variable(model, x[m in M_axis, j in instance.J], Bin);
-    @constraint(model, cov[j in instance.J], sum(x[m, j] for m in M_axis) >= 1);
+    @constraint(model, cov[j in instance.J], sum(x[m, j] for m in M_axis) == 1);
     @constraint(model, knp[m in M_axis], sum(instance.w[m, j] * x[m, j] for j in instance.J) <= instance.Q[m]);
     @objective(model, Min, sum(instance.c[m, j] * x[m, j] for m in M_axis, j in instance.J));
 
