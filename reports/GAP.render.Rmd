@@ -198,10 +198,11 @@ paged_table(mismatches)
 
 ## Some helper functions
 
-### ECDF
+### Performance profiles
 
-To compare the different methods, we use ECDF of computation times. The following function is used to plot the ECDF of computation time of a given data set.
-Each solver keeping the same color in the whole document.
+To compare the different methods, we use performance profiles; see Dolan et al. (2002). 
+
+First, we associate colors to each solvers. Each solver will keep its color throughout the document.
 
 ```{r}
 # Define color palette
@@ -209,31 +210,72 @@ colors <- scales::hue_pal()(length(unique(results$solver_with_params)))
 
 # Define a mapping solver_with_params[i] -> color[i]
 color_mapping = setNames(colors[1:length(solvers$Solver)], solvers$Solver)
+```
+
+Then, we introduce the function "get_performance" which augments a given data set with the performance of each solver with respect to the best solver.
+
+```{r}
+get_performance = function(dataset, 
+                           column_instance = "instance",
+                           column_criteria = "time",
+                           column_solver = "solver",
+                           column_output = "performance") {
   
-# Define function plot_ecdf
-plot_ecdf = function (dataset, main = "ECDF", log = FALSE) {
+  # Calculate the best time for each instance
+  best_times = dataset %>%
+    group_by(!!sym(column_instance)) %>%
+    mutate(best_time = min(!!sym(column_criteria)))
   
-  result = ggplot(dataset, aes(x = time, color = solver_with_params)) +
-    stat_ecdf(geom = "step") +
-    xlab("Total Time") +
-    ylab("ECDF") +
-    labs(title = main)  +
+  # Calculate the performance for each combination of instance and solver
+  result = best_times %>%
+    group_by(instance, !!sym(column_solver)) %>%
+    mutate(!!sym(column_output) := !!sym(column_criteria) / best_time) %>%
+    ungroup()
+
+  return (result)
+}
+```
+
+The "plot_performance" function then plots the ecdf of the obtained performance.
+
+```{r}
+plot_performance = function(dataset,
+                            main = "",
+                            log = FALSE,
+                            column_instance = "instance", 
+                            column_criteria = "time", 
+                            column_solver = "solver", 
+                            column_output = "performance") {
+  
+  perf = get_performance(dataset, column_instance, column_criteria, column_solver, column_output)
+  
+  if (main == "") {
+    main = paste0("ECDF of ", column_criteria ," performance for all solvers")
+  }
+  
+  result = ggplot(perf, aes(x = performance, color = !!sym(column_solver))) +
+    geom_step(stat = "ecdf") +
+    labs(
+      x = "Performance w.r.t. best solver",
+      y = "ECDF",
+      title = main
+    ) +
     scale_color_manual(values = color_mapping) +
     theme_minimal()
   
   if (log) {
-    result = result + scale_x_log10()
+    result = result + scale_x_log10() 
   }
   
-  result
+  return (result)
   
 }
 ```
 
-For instance, the following execution will plot the ECDF over all tested methods.
+Here is an example.
 
 ```{r}
-plot_ecdf(results)
+plot_performance(results, column_solver = "solver_with_params")
 ```
 
 ### Summary tables
@@ -292,9 +334,10 @@ knitr::kable(Table)
 In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
 
 ```{r}
-plot_ecdf(
+plot_performance(
   results[results$solver == "idol_bab",], 
-  main = "Branch-and-bound: with v.s. without heuristics"
+  main = "Branch-and-bound: with v.s. without heuristics",
+  column_solver = "solver_with_params"
 )
 ```
 
@@ -311,11 +354,14 @@ knitr::kable(TableBaB)
 #### Comparing with Coluna.jl
 
 ```{r}
-plot_ecdf(
+to_save = plot_performance(
   results[results$solver != "external" & results$solver != "idol_bab",],
   main = "idol versus Coluna.jl",
-  log = TRUE
+  log = TRUE,
+  column_solver = "solver_with_params"
 )
+to_save
+ggsave("profile.png", plot = to_save, width = 8, height = 4)
 ```
 
 
@@ -348,7 +394,7 @@ find_pathological_instances = function (dataset, solver_a, solver_b) {
   return ( result )
 }
 
-pathological_instances = find_pathological_instances(results, "coluna", "idol_bap_h1_s0_f1_c1500_m1")
+pathological_instances = find_pathological_instances(results, "Coluna.jl", "idol_bap_h1_s0_f1_c1500_m1")
 ```
 
 ```{r}
@@ -360,7 +406,10 @@ knitr::kable(pathological_instances)
 ##### All different settings of idol
 
 ```{r}
-plot_ecdf(results[results$solver == "idol_bap",], main = "idol", log = TRUE)
+plot_performance(results[results$solver == "idol_bap",], 
+                 main = "idol",
+                 log = TRUE,
+                 column_solver = "solver_with_params")
 ```
 
 ##### Branching strategy: on master v.s. on pricing
@@ -368,10 +417,11 @@ plot_ecdf(results[results$solver == "idol_bap",], main = "idol", log = TRUE)
 Comparing branching scheme (on master or on pricing problem) without smoothing, using artificial variables (phase I) and primal heuristics.
 
 ```{r}
-plot_ecdf(
+plot_performance(
   results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], 
   main = "Branching strategy: on master v.s. on pricing", 
-  log = TRUE
+  log = TRUE,
+  column_solver = "solver_with_params"
 )
 ```
 
@@ -380,10 +430,11 @@ plot_ecdf(
 Comparing Farkas pricing with artificial variables (phase I) using primal heuristics, master branching and no smoothing.
 
 ```{r}
-plot_ecdf(
+plot_performance(
   results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,],
   main = "Handling Infeasibiliy: slack variables v.s. Farkas pricing", 
-  log = TRUE
+  log = TRUE,
+  column_solver = "solver_with_params"
 )
 ```
 
@@ -392,9 +443,10 @@ plot_ecdf(
 Comparing smoothing factors with artificial variables, master branching and primal heuristics.
 
 ```{r}
-plot_ecdf(
+plot_performance(
   results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == TRUE,], 
-  main = expression("Stabilization by smoothing dual values: different values for alpha"), 
-  log = TRUE
+  main = "Stabilization by smoothing dual values: different values for alpha", 
+  log = TRUE,
+  column_solver = "solver_with_params"
 )
 ```
