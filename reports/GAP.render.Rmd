@@ -32,17 +32,21 @@ knitr::opts_chunk$set(
 
 ### Direct model
 
-Let $m$ be a given of agents and let $n$ be a set of tasks to perform. Let $c_{ij}$ be the cost of assigning task $j$ to agent $i$, $w_{ij}$ be the resource consumption of task $j$ when performed by agent $i$ and let $t_i$ be the resource capacity of agent $i$. The Generalized Assignment Problem (GAP) can be modeled as
+Let $m$ be the number of agents and let $n$ be the number of tasks to be performed. 
+
+Let $c_{ij}$ be the cost of assigning task $j$ to agent $i$, $w_{ij}$ be the resource consumption of task $j$ when performed by agent $i$ and let $t_i$ be the resource capacity of agent $i$. 
+
+The Generalized Assignment Problem (GAP) can be modeled as
 
 $$
   \begin{array}{lll}
-    \textrm{minimize } & \displaystyle \sum_{i=1}^m \sum_{j=1}^n c_{ij} x_{ij} \\
-    \textrm{subject to } & \displaystyle \sum_{j=1}^n w_{ij}x_{ij} \le t_{i} & i=1,...,m \\
+    \min \ & \displaystyle \sum_{i=1}^m \sum_{j=1}^n c_{ij} x_{ij} \\
+    \textrm{s.t.} \ & \displaystyle \sum_{j=1}^n w_{ij}x_{ij} \le t_{i} & i=1,...,m \\
     & \displaystyle \sum_{i=1}^m x_{ij} = 1 & j = 1,...,n \\
     & x_{ij} \in \{ 0,1 \}.
   \end{array}
 $$
-Here, variable $x_{ij}$ encodes the assignment decision and equals $1$ if and only if task $j$ is assigned to agent $i$.
+Here, variable $x_{ij}$ equals $1$ if, and only if, task $j$ is assigned to agent $i$.
 
 ### Dantzig-Wolfe reformulation
 
@@ -50,14 +54,16 @@ Let us enumerate the list of all feasible assignments, i.e., let $\{ \bar{\mathr
 
 $$
   \begin{array}{lll}
-    \textrm{minimize } & \displaystyle \sum_{e\in E} \alpha_e \left( \sum_{i=1}^m\sum_{j=1}^n c_{ij}\bar{\mathrm{x}}_{ij}^e \right) \\
-    \textrm{subject to } & \displaystyle \sum_{i=1}^m \alpha_e\bar{\mathrm{x}}_{ij}^e = 1 & j=1,...,n \\
+    \min \ & \displaystyle \sum_{e\in E} \alpha_e \left( \sum_{i=1}^m\sum_{j=1}^n c_{ij}\bar{\mathrm{x}}_{ij}^e \right) \\
+    \textrm{s.t.} \ & \displaystyle \sum_{i=1}^m \alpha_e\bar{\mathrm{x}}_{ij}^e = 1 & j=1,...,n \\
     & \displaystyle \sum_{e\in E} \alpha_e = 1 \\
     & \alpha_e \ge 0
   \end{array}
 $$
 
-Though this model contains an exponential number of variables (i.e., columns) it can still be solved efficiently using [Column Generation](https://en.wikipedia.org/wiki/Column_generation) and [Branch and price](https://en.wikipedia.org/wiki/Branch_and_price). In such case, the pricing problem is a [Knapsack Problem](https://en.wikipedia.org/wiki/Knapsack_problem).
+Though this model contains an exponential number of variables (i.e., columns) it can still be solved efficiently using [Column Generation](https://en.wikipedia.org/wiki/Column_generation) and [Branch and price](https://en.wikipedia.org/wiki/Branch_and_price). 
+
+In such a case, the pricing problem is a [Knapsack Problem](https://en.wikipedia.org/wiki/Knapsack_problem).
 
 ## Reading instances
 
@@ -102,9 +108,9 @@ idol[idol$solver == "external",]$solver_with_params = "external"
 idol[idol$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", idol[idol$solver == "idol_bab",]$with_heuristics)
 ```
 
-### Results obtained with coluna.jl
+### Results obtained with Coluna.jl
 
-The results obtained using coluna can be found inside `results_GAP_coluna.csv`.
+The results obtained using Coluna.jl can be found inside `results_GAP_coluna.csv`.
 
 ```{r}
 coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
@@ -450,3 +456,69 @@ plot_performance(
   column_solver = "solver_with_params"
 )
 ```
+
+
+## Annex results for branch-and-price
+
+### Reading the results
+
+The annex results can be found inside `bap_annex_GAP_coluna.csv`. (Note that this file can be obtained by running `cat bap_annex_GAP_idol__*.csv > bap_annex_GAP_idol.csv` after having extracted the `.zip` the artifact).
+
+```{r}
+annex = read.csv("../bap_annex_GAP_idol.csv", header = FALSE)
+colnames(annex) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "total_time", "bab_time", "cg_time", "master_time", "sp_time")
+```
+
+Then, we concatenate the parameter values with the method's name to obtain a unique identifier for each tested method, just like before.
+
+```{r}
+annex$solver_with_params = paste0(annex$solver, "_h", annex$with_heuristics, "_s", annex$smoothing_factor * 100, "_f", annex$farkas_pricing, "_c", annex$clean_up, "_m", annex$branching_on_master)
+```
+
+### All
+
+We can now combine and print out the obtained computational results for each instance for each solver.
+
+```{r}
+annex = annex %>%
+  mutate(
+    n_agents = as.integer(sub('.*instance_n(\\d+)_\\d+__\\d+\\.txt', '\\1', instance)),
+    n_jobs = as.integer(sub('.*instance_n\\d+_(\\d+)__\\d+\\.txt', '\\1', instance))
+  )
+
+
+if (sum(annex$time > time_limit) > 0) {
+  annex[annex$time > time_limit,]$time = time_limit
+}
+
+annex$overhead = annex$total_time - (annex$master_time + annex$sp_time)
+```
+
+```{r, echo = FALSE}
+paged_table(annex)
+```
+
+```{r}
+id_vars = c(
+  "instance", "solver", "with_heuristics", "smoothing_factor",
+  "farkas_pricing", "clean_up_threshold", "branching_on_master",
+  "solver_with_params", "n_agents", "n_jobs"
+)
+
+id_vals = c("total_time", "bab_time", "cg_time", "master_time", "sp_time", "overhead")
+
+annex_long <- reshape(annex, varying = list(id_vals),
+                      direction = "long", idvar = id_vars, timevar = "type", times = id_vals)
+
+rownames(annex_long) = NULL
+colnames(annex_long) = c(id_vars, "type", "value")
+
+paged_table(annex_long)
+```
+
+```{r}
+ggplot(annex_long[annex_long$type %in% c("master_time", "sp_time", "overhead"),], aes(fill=type, y=value, x= n_agents)) + 
+    geom_bar(position="fill", stat="identity")
+```
+
+

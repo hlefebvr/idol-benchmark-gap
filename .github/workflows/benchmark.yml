@@ -22,8 +22,8 @@ jobs:
         instances:
           # - "dummies"
           - "n2"
-          #- "n3"
-          #- "n4"
+          - "n3"
+          - "n4"
           #- "n5"
     steps:
     - uses: actions/checkout@v3
@@ -70,8 +70,8 @@ jobs:
         instances:
           # - "dummies"
           - "n2"
-          #- "n3"
-          #- "n4"
+          - "n3"
+          - "n4"
           #- "n5"
           #- "n10"
     steps:
