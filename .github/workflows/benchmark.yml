@@ -123,7 +123,7 @@ jobs:
       run: mv results_GAP_idol.csv results_GAP_idol__$(uuidgen).csv
 
     - name: Rename annex_results file
-      run: mv bap_annex_GAP_idol.csv bap_annex_GAP_idol__$(uuidgen).csv
+      run: echo "" >> bap_annex_GAP_idol.csv && mv bap_annex_GAP_idol.csv bap_annex_GAP_idol__$(uuidgen).csv
 
     - uses: actions/upload-artifact@v3
       with:
