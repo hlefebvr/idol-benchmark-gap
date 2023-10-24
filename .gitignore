@@ -8,3 +8,6 @@ cmake-*
 *.log
 *.csv
 !reports/*.log
+*.png
+results/
+*.zip
