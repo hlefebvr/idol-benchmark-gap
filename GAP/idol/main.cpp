@@ -162,6 +162,7 @@ int main(int t_argc, const char** t_argv) {
                             .with_branching_on_master(branching_on_master)
                             .with_column_pool_clean_up(clean_up, .75)
                             .with_farkas_pricing(with_farkas_pricing)
+                            .with_max_columns_per_pricing(1)
                             .with_log_level(Mute, Yellow)
                             .with_log_frequency(1)
                     )
