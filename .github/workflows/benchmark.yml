@@ -22,8 +22,8 @@ jobs:
         instances:
           # - "dummies"
           - "n2"
-          - "n3"
-          - "n4"
+          #- "n3"
+          #- "n4"
           #- "n5"
     steps:
     - uses: actions/checkout@v3
@@ -70,8 +70,8 @@ jobs:
         instances:
           # - "dummies"
           - "n2"
-          - "n3"
-          - "n4"
+          #- "n3"
+          #- "n4"
           #- "n5"
           #- "n10"
     steps:
@@ -122,10 +122,18 @@ jobs:
     - name: Rename results file
       run: mv results_GAP_idol.csv results_GAP_idol__$(uuidgen).csv
 
+    - name: Rename annex_results file
+      run: mv bap_annex_GAP_idol.csv bap_annex_GAP_idol__$(uuidgen).csv
+
     - uses: actions/upload-artifact@v3
       with:
         name: results
         path: results_GAP_idol__*.csv
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: results
+        path: bap_annex_GAP_idol__*.csv
 
   render:
     name: "Build report"
@@ -142,22 +150,31 @@ jobs:
       - name: Collect all results from idol
         run: cat results_GAP_idol__*.csv > results_GAP_idol.csv
 
-      - name: Collect all results from coluna
+      - name: Collect all annex results from idol
+        run: cat bap_annex_GAP_idol__*.csv > bap_annex_GAP_idol.csv
+
+      - name: Collect all results from Coluna.jl
         run: cat results_GAP_coluna__*.csv > results_GAP_coluna.csv
 
-      # Install all R markdown dependecies
       - name: Update apt-get
         run: sudo apt-get update
+
       - name: Install dependencies of kableExtra
         run: sudo apt-get install libxml2-dev libfontconfig1-dev libcurl4-openssl-dev
+
       - uses: r-lib/actions/setup-pandoc@v2
+
       - uses: r-lib/actions/setup-r@v2
+
       - name: Install rmarkdown
         run: R -e "install.packages(\"rmarkdown\")"
+
       - name: Install dplyr
         run: R -e "install.packages(\"dplyr\")"
+
       - name: Install rmdformats
         run: R -e "install.packages(\"rmdformats\")"
+
       - name: Install ggplot2
         run: R -e "install.packages(\"ggplot2\")"
 

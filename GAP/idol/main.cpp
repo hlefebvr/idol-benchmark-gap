@@ -8,6 +8,7 @@
 #include <idol/optimizers/branch-and-bound/branching-rules/factories/MostInfeasible.h>
 #include <idol/optimizers/branch-and-bound/branching-rules/factories/LeastInfeasible.h>
 #include <idol/optimizers/dantzig-wolfe/DantzigWolfeDecomposition.h>
+#include <idol/optimizers/dantzig-wolfe/Optimizers_DantzigWolfeDecomposition.h>
 #include <idol/optimizers/column-generation/IntegerMaster.h>
 #include <idol/optimizers/callbacks/RENS.h>
 #include <idol/optimizers/callbacks/LocalBranching.h>
@@ -188,9 +189,8 @@ int main(int t_argc, const char** t_argv) {
 
     std::cout << "Time: " << model.optimizer().time().count() << " s" << std::endl;
 
-    write_to_file(
+    write_results_to_file(
             path_to_instance,
-            t_instance,
             method,
             with_heuristics,
             smoothing_factor,
@@ -202,6 +202,46 @@ int main(int t_argc, const char** t_argv) {
             model.get_best_obj(),
             model.optimizer().time().count()
     );
+
+    if (method == "bap") {
+
+        const auto &branch_and_bound = model.optimizer().as<Optimizers::BranchAndBound<NodeVarInfo>>();
+        const auto &dantzig_wolfe = branch_and_bound.relaxation().optimizer().as<Optimizers::DantzigWolfeDecomposition>();
+
+        const double total_time = model.optimizer().time().count();
+        const double bab_time = branch_and_bound.time().count();
+        const double cg_time = branch_and_bound.relaxation().optimizer().time().cumulative_count();
+        const double master_time = dantzig_wolfe.master().optimizer().time().cumulative_count();
+        double sp_time = 0.;
+
+        for (auto &sp: dantzig_wolfe.subproblems()) {
+            sp_time += sp.model().optimizer().time().cumulative_count();
+        }
+
+        std::cout << "Total: " << total_time << std::endl;
+        std::cout << "BaB: " << bab_time << std::endl;
+        std::cout << "CG: " << cg_time << std::endl;
+        std::cout << "Master: " << master_time << std::endl;
+        std::cout << "SP: " << sp_time << std::endl;
+        std::cout << "--" << std::endl;
+        std::cout << "% of time spent actually solving opt. problems: " << (master_time + sp_time) / total_time * 100  << " s" << std::endl;
+
+        write_bap_annex_results_to_file(
+                path_to_instance,
+                method,
+                with_heuristics,
+                smoothing_factor,
+                with_farkas_pricing,
+                clean_up,
+                branching_on_master,
+                total_time,
+                bab_time,
+                cg_time,
+                master_time,
+                sp_time
+        );
+
+    }
 
     return 0;
 }
