@@ -125,6 +125,7 @@ int main(int t_argc, const char** t_argv) {
                     .with_node_selection_rule(BestBound())
                     .with_time_limit(time_limit)
                     .with_subtree_depth(0)
+                    .with_log_level(Info, Blue)
                     .conditional(with_heuristics, [](auto& x) {
                         x.with_callback(
                                 Heuristics::RENS()

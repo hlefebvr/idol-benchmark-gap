@@ -86,8 +86,11 @@ jobs:
     - name: Install HiGHS
       run: mkdir HiGHS/build && cd HiGHS/build && cmake .. && make && sudo make install
 
+    - name: Download robin_hood map
+      run: wget https://raw.githubusercontent.com/martinus/robin-hood-hashing/3.11.5/src/include/robin_hood.h robin_hood.h
+
     - name: Install idol
-      run: git clone --branch dev https://github.com/hlefebvr/idol.git && cd idol && cmake -DUSE_HIGHS=YES . && make && sudo make install
+      run: git clone --branch dev https://github.com/hlefebvr/idol.git && cd idol && cmake -DUSE_HIGHS=YES -DUSE_ROBINHOOD=YES -DROBIN_HOODDIR=${{github.workspace}} . && make && sudo make install
 
     #- name: Download Eigen
       #  run: wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
