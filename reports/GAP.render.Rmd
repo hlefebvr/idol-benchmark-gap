@@ -108,6 +108,15 @@ idol[idol$solver == "external",]$solver_with_params = "external"
 idol[idol$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", idol[idol$solver == "idol_bab",]$with_heuristics)
 ```
 
+```{r}
+idol =  idol %>%
+  mutate(status = trimws(status))
+
+if (sum(idol$status == "Fail") > 0) {
+  idol[idol$status == "Fail",]$time = time_limit
+}
+```
+
 ### Results obtained with Coluna.jl
 
 The results obtained using Coluna.jl can be found inside `results_GAP_coluna.csv`.
@@ -175,8 +184,8 @@ In this section, we first make sure that every solver reports the same optimal o
 ```{r}
 compare_results = function (dataset, solver_a, solver_b) {
   
-  results_a = dataset[dataset$solver_with_params == solver_a & dataset$time < time_limit,]
-  results_b = dataset[dataset$solver_with_params == solver_b & dataset$time < time_limit,]
+  results_a = dataset[dataset$solver_with_params == solver_a & dataset$time < time_limit & !(dataset$status %in% c("ERROR", "Fail")),]
+  results_b = dataset[dataset$solver_with_params == solver_b & dataset$time < time_limit & !(dataset$status %in% c("ERROR", "Fail")),]
   
   merged = merge(results_a, results_b, by = c("instance"))
   
@@ -305,10 +314,10 @@ make_table = function (dataset) {
   count = aggregate(dataset$instance, by = dataset[,group_by], FUN = length)
   colnames(count) = c(group_by, "count")
   
-  unsolved = aggregate(dataset$time >= time_limit & dataset$status != "ERROR", by = dataset[,group_by], FUN = sum)
+  unsolved = aggregate(dataset$time >= time_limit & !(dataset$status %in% c("ERROR", "Fail")), by = dataset[,group_by], FUN = sum)
   colnames(unsolved) = c(group_by, "unsolved")
   
-  errors = aggregate(dataset$status == "ERROR", by = dataset[,group_by], FUN = sum)
+  errors = aggregate(dataset$status %in% c("ERROR", "Fail"), by = dataset[,group_by], FUN = sum)
   colnames(errors) = c(group_by, "error")
   
   solved_filter = dataset$time < time_limit
