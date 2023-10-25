@@ -66,7 +66,6 @@ jobs:
           - "bap true 0 false false"
           - "bap true 0 true true"
           - "bap true .3 true true"
-          - "bap true .8 true true"
         instances:
           # - "dummies"
           - "n2"

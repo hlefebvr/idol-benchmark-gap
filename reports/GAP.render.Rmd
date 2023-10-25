@@ -154,6 +154,7 @@ results = results %>%
     n_jobs = as.integer(sub('.*instance_n\\d+_(\\d+)__\\d+\\.txt', '\\1', instance))
   )
 
+results$unsolved = results$time >= time_limit | results$status == "ERROR" | results$status == "Fail"
 
 if (sum(results$time > time_limit) > 0) {
   results[results$time > time_limit,]$time = time_limit
@@ -227,70 +228,93 @@ colors <- scales::hue_pal()(length(unique(results$solver_with_params)))
 color_mapping = setNames(colors[1:length(solvers$Solver)], solvers$Solver)
 ```
 
-Then, we introduce the function "get_performance" which augments a given data set with the performance of each solver with respect to the best solver.
+Then, we introduce the function "add_performance_ratio" which augments a given data set with the performance of each solver with respect to the best solver.
 
 ```{r}
-get_performance = function(dataset, 
-                           column_instance = "instance",
-                           column_criteria = "time",
-                           column_solver = "solver",
-                           column_output = "performance") {
+add_performance_ratio = function(dataset, 
+                                 criterion_column = "total_time",
+                                 unsolved_column = "unsolved",
+                                 instance_column = "instance",
+                                 solver_column = "solver",
+                                 output_column = "performance_ratio") {
   
-  # Calculate the best time for each instance
-  best_times = dataset %>%
-    group_by(!!sym(column_instance)) %>%
-    mutate(best_time = min(!!sym(column_criteria)))
+  # Compute best score for each instance
+  best = dataset %>%
+    group_by(!!sym(instance_column)) %>%
+    mutate(best_solver = min(!!sym(criterion_column)))
   
-  # Calculate the performance for each combination of instance and solver
-  result = best_times %>%
-    group_by(instance, !!sym(column_solver)) %>%
-    mutate(!!sym(column_output) := !!sym(column_criteria) / best_time) %>%
+  # Compute performance ratio for each instance and solver
+  result = best %>%
+    group_by(!!sym(instance_column), !!sym(solver_column)) %>%
+    mutate(!!sym(output_column) := !!sym(criterion_column) / best_solver) %>%
     ungroup()
+  
+  if (sum(result[,unsolved_column]) > 0) {
+    result[result[,unsolved_column] == TRUE,output_column] = max(result[,output_column])
+  }
 
   return (result)
 }
-```
 
-The "plot_performance" function then plots the ecdf of the obtained performance.
-
-```{r}
-plot_performance = function(dataset,
-                            main = "",
-                            log = FALSE,
-                            column_instance = "instance", 
-                            column_criteria = "time", 
-                            column_solver = "solver", 
-                            column_output = "performance") {
+plot_performance_profile = function(dataset,
+                                    criterion_column,
+                                    unsolved_column = "unsolved",
+                                    instance_column = "instance",
+                                    solver_column = "solver"
+                                    ) {
   
-  perf = get_performance(dataset, column_instance, column_criteria, column_solver, column_output)
+  dataset_with_performance_ratios = add_performance_ratio(dataset,
+                                                          criterion_column = criterion_column,
+                                                          instance_column = instance_column,
+                                                          solver_column = solver_column,
+                                                          unsolved_column = unsolved_column)
   
-  if (main == "") {
-    main = paste0("ECDF of ", column_criteria ," performance for all solvers")
+  solved_dataset_with_performance_ratios = dataset_with_performance_ratios[!dataset_with_performance_ratios[,unsolved_column],]
+  
+  compute_performance_profile_point = function(method, data) {
+    
+    performance_ratios = solved_dataset_with_performance_ratios[solved_dataset_with_performance_ratios[,solver_column] == method,]$performance_ratio
+    
+    unscaled_performance_profile_point = ecdf(performance_ratios)(data)
+    
+    n_instances = sum(dataset[,solver_column] == method)
+    n_solved_instances = sum(dataset[,solver_column] == method & !dataset[,unsolved_column])
+    
+    return( unscaled_performance_profile_point * n_solved_instances / n_instances )
   }
   
-  result = ggplot(perf, aes(x = performance, color = !!sym(column_solver))) +
-    geom_step(stat = "ecdf") +
-    labs(
-      x = "Performance w.r.t. best solver",
-      y = "ECDF",
-      title = main
-    ) +
-    scale_color_manual(values = color_mapping) +
-    theme_minimal()
+  perf = solved_dataset_with_performance_ratios %>%
+    group_by(!!sym(solver_column)) %>%
+    mutate(performance_profile_point = compute_performance_profile_point(unique(!!sym(solver_column)), performance_ratio))
   
-  if (log) {
-    result = result + scale_x_log10() 
-  }
+  result = ggplot(data = perf, aes(x = performance_ratio, y = performance_profile_point, color = !!sym(solver_column))) +
+              geom_line()
   
   return (result)
-  
 }
+
 ```
 
 Here is an example.
 
 ```{r}
-plot_performance(results, column_solver = "solver_with_params")
+plot_performance_profile(results,
+                         criterion_column = "time",
+                         solver_column = "solver_with_params") +
+  labs(x = "Performance ratio", y = "% of instances") +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_minimal()
+```
+
+As a complement, here is the ECDF of computation time.
+
+```{r}
+ggplot(data = results, aes(x = time, color = solver_with_params)) +
+  stat_ecdf(geom = "step") +
+  labs(x = "Total Time", y = "ECDF") +
+  scale_color_manual(values = color_mapping) +
+  theme_minimal()
 ```
 
 ### Summary tables
@@ -349,11 +373,15 @@ knitr::kable(Table)
 In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
 
 ```{r}
-plot_performance(
+plot_performance_profile(
   results[results$solver == "idol_bab",], 
-  main = "Branch-and-bound: with v.s. without heuristics",
-  column_solver = "solver_with_params"
-)
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+) +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Branch-and-bound: with v.s. without heuristics") +
+  theme_minimal()
 ```
 
 ```{r}
@@ -369,12 +397,15 @@ knitr::kable(TableBaB)
 #### Comparing with Coluna.jl
 
 ```{r}
-to_save = plot_performance(
+to_save = plot_performance_profile(
   results[results$solver != "external" & results$solver != "idol_bab",],
-  main = "idol versus Coluna.jl",
-  log = TRUE,
-  column_solver = "solver_with_params"
-)
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+) +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "idol versus Coluna.jl") +
+  theme_minimal()
 to_save
 ggsave("profile.png", plot = to_save, width = 8, height = 4)
 ```
@@ -421,10 +452,15 @@ knitr::kable(pathological_instances)
 ##### All different settings of idol
 
 ```{r}
-plot_performance(results[results$solver == "idol_bap",], 
-                 main = "idol",
-                 log = TRUE,
-                 column_solver = "solver_with_params")
+plot_performance_profile(
+  results[results$solver == "idol_bap",], 
+  criterion_column = "time",
+  solver_column = "solver_with_params") +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "idol") +
+  scale_x_log10() +
+  theme_minimal()
 ```
 
 ##### Branching strategy: on master v.s. on pricing
@@ -432,12 +468,16 @@ plot_performance(results[results$solver == "idol_bap",],
 Comparing branching scheme (on master or on pricing problem) without smoothing, using artificial variables (phase I) and primal heuristics.
 
 ```{r}
-plot_performance(
+plot_performance_profile(
   results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], 
-  main = "Branching strategy: on master v.s. on pricing", 
-  log = TRUE,
-  column_solver = "solver_with_params"
-)
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+)  +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Branching strategy: on master v.s. on pricing") +
+  scale_x_log10() +
+  theme_minimal()
 ```
 
 ##### Handling infeasibility: slack variables v.s. Farkas pricing
@@ -445,12 +485,16 @@ plot_performance(
 Comparing Farkas pricing with artificial variables (phase I) using primal heuristics, master branching and no smoothing.
 
 ```{r}
-plot_performance(
+plot_performance_profile(
   results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,],
-  main = "Handling Infeasibiliy: slack variables v.s. Farkas pricing", 
-  log = TRUE,
-  column_solver = "solver_with_params"
-)
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+)  +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Handling Infeasibiliy: slack variables v.s. Farkas pricing") +
+  scale_x_log10() +
+  theme_minimal()
 ```
 
 ##### Stabilization by smoothing dual values
@@ -458,12 +502,16 @@ plot_performance(
 Comparing smoothing factors with artificial variables, master branching and primal heuristics.
 
 ```{r}
-plot_performance(
+plot_performance_profile(
   results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == TRUE,], 
-  main = "Stabilization by smoothing dual values: different values for alpha", 
-  log = TRUE,
-  column_solver = "solver_with_params"
-)
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+)  +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Stabilization by smoothing dual values: different values for alpha") +
+  scale_x_log10() +
+  theme_minimal()
 ```
 
 
