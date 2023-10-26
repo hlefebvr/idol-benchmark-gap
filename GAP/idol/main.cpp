@@ -2,6 +2,7 @@
 
 #include <idol/modeling.h>
 #include <idol/optimizers/wrappers/HiGHS/HiGHS.h>
+#include <idol/optimizers/wrappers/GLPK/GLPK.h>
 #include <idol/problems/generalized-assignment-problem/GAP_Instance.h>
 #include "write_to_file.h"
 #include <idol/optimizers/branch-and-bound/node-selection-rules/factories/BestBound.h>
@@ -126,7 +127,7 @@ int main(int t_argc, const char** t_argv) {
                     .with_time_limit(time_limit)
                     .with_subtree_depth(0)
                     .with_log_frequency(1)
-                    .with_log_level(Mute, Blue)
+                    .with_log_level(Info, Blue)
                     .conditional(with_heuristics, [](auto& x) {
                         x.with_callback(
                                 Heuristics::RENS()
@@ -165,7 +166,7 @@ int main(int t_argc, const char** t_argv) {
                             .with_column_pool_clean_up(clean_up, .75)
                             .with_farkas_pricing(with_farkas_pricing)
                             .with_max_columns_per_pricing(1)
-                            .with_log_level(Mute, Yellow)
+                            .with_log_level(Info, Yellow)
                             .with_log_frequency(1)
                     )
                     .with_branching_rule(MostInfeasible())
@@ -189,8 +190,6 @@ int main(int t_argc, const char** t_argv) {
     }
 
     model.optimize();
-
-    std::cout << "Time: " << model.optimizer().time().count() << " s" << std::endl;
 
     write_results_to_file(
             path_to_instance,

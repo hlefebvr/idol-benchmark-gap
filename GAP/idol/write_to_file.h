@@ -29,18 +29,22 @@ void write_results_to_file(
         throw std::runtime_error("Could not open error destination file.");
     }
 
-    file << t_path_to_instance << ','
-         << (t_optimizer_name == "external" ? t_optimizer_name : "idol_" + t_optimizer_name) << ','
-         << t_with_heuristics << ','
-         << t_smoothing_factor << ','
-         << t_farkas_pricing << ','
-         << t_clean_up << ','
-         << t_branching_on_master << ','
-         << t_status << ','
-         << t_reason << ','
-         << t_objective_value << ','
-         << t_time
-         << '\n';
+    for (auto& stream : std::list<std::ostream*> { &file, &std::cout }) {
+
+        *stream << t_path_to_instance << ','
+             << (t_optimizer_name == "external" ? t_optimizer_name : "idol_" + t_optimizer_name) << ','
+             << t_with_heuristics << ','
+             << t_smoothing_factor << ','
+             << t_farkas_pricing << ','
+             << t_clean_up << ','
+             << t_branching_on_master << ','
+             << t_status << ','
+             << t_reason << ','
+             << t_objective_value << ','
+             << t_time
+             << '\n';
+
+    }
 
     file.close();
 }
