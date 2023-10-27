@@ -84,6 +84,7 @@ int main(int t_argc, const char** t_argv) {
 
     // Variables
     auto x = model.add_vars(Dim<2>(n_agents, n_jobs), 0., 1., Binary, "x");
+    auto art = model.add_var(0,0,Continuous, "art");
 
     // Objective function
     Expr objective = idol_Sum(
