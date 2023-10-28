@@ -3,6 +3,8 @@
 #include <idol/modeling.h>
 #include <idol/optimizers/wrappers/HiGHS/HiGHS.h>
 #include <idol/optimizers/wrappers/GLPK/GLPK.h>
+#include <idol/optimizers/wrappers/Gurobi/Gurobi.h>
+#include <idol/optimizers/wrappers/Mosek/Mosek.h>
 #include <idol/problems/generalized-assignment-problem/GAP_Instance.h>
 #include "write_to_file.h"
 #include <idol/optimizers/branch-and-bound/node-selection-rules/factories/BestBound.h>
@@ -13,6 +15,8 @@
 #include <idol/optimizers/column-generation/IntegerMaster.h>
 #include <idol/optimizers/callbacks/RENS.h>
 #include <idol/optimizers/callbacks/LocalBranching.h>
+
+#define OPTIMIZER HiGHS
 
 ///////////////////////////
 #include <cstdio>
@@ -110,7 +114,7 @@ int main(int t_argc, const char** t_argv) {
     // Set optimizer
     if (method == "external") {
 
-        model.use(HiGHS().with_time_limit(time_limit));
+        model.use(OPTIMIZER().with_time_limit(time_limit));
 
     } else if (method == "bab") {
 
@@ -122,7 +126,7 @@ int main(int t_argc, const char** t_argv) {
 
         model.use(
                 BranchAndBound()
-                    .with_node_optimizer(HiGHS::ContinuousRelaxation())
+                    .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
                     .with_branching_rule(MostInfeasible())
                     .with_node_selection_rule(BestBound())
                     .with_time_limit(time_limit)
@@ -134,7 +138,7 @@ int main(int t_argc, const char** t_argv) {
                                 Heuristics::RENS()
                                     .with_optimizer(
                                         BranchAndBound()
-                                                .with_node_optimizer(HiGHS::ContinuousRelaxation())
+                                                .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
                                                 .with_branching_rule(MostInfeasible())
                                                 .with_node_selection_rule(BestBound())
                                                 .with_time_limit(time_limit)
@@ -160,8 +164,8 @@ int main(int t_argc, const char** t_argv) {
                 BranchAndBound()
                     .with_node_optimizer(
                         DantzigWolfeDecomposition(decomposition)
-                            .with_master_optimizer(HiGHS::ContinuousRelaxation().with_infeasible_or_unbounded_info(true))
-                            .with_pricing_optimizer(HiGHS())
+                            .with_master_optimizer(OPTIMIZER::ContinuousRelaxation().with_infeasible_or_unbounded_info(true))
+                            .with_pricing_optimizer(OPTIMIZER())
                             .with_dual_price_smoothing_stabilization(smoothing_factor)
                             .with_branching_on_master(branching_on_master)
                             .with_column_pool_clean_up(clean_up, .75)
@@ -176,7 +180,7 @@ int main(int t_argc, const char** t_argv) {
                     .conditional(with_heuristics, [](auto& x){
                         x.with_callback(
                                 Heuristics::IntegerMaster()
-                                    .with_optimizer(HiGHS())
+                                    .with_optimizer(OPTIMIZER())
                             );
                     })
                     .with_subtree_depth(0)
