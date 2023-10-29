@@ -112,6 +112,10 @@ idol[idol$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", idol[
 idol =  idol %>%
   mutate(status = trimws(status))
 
+if (sum(idol$reason == "TimeLimit") > 0) {
+  idol[idol$reason == "TimeLimit",]$time = time_limit
+}
+
 if (sum(idol$status == "Fail") > 0) {
   idol[idol$status == "Fail",]$time = time_limit
 }

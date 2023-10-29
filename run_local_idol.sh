@@ -2,12 +2,12 @@
 
 ARGS=(
   "external"
-  "bab true"
+  #"bab true"
   "bab false"
-  "bap true 0 false true"
-  "bap true 0 false false"
-  "bap true 0 true true"
-  "bap true .3 true true"
+  #"bap true 0 false true"
+  #"bap true 0 false false"
+  #"bap true 0 true true"
+  #"bap true .3 true true"
 )
 
 FOLDERS=(
