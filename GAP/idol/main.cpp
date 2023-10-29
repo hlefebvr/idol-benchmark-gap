@@ -54,8 +54,8 @@ bool parse_bool(const std::string& t_string) {
 
 int main(int t_argc, const char** t_argv) {
 
-    // signal(SIGSEGV, handler);
-    // signal(SIGABRT, handler);
+    signal(SIGSEGV, handler);
+    signal(SIGABRT, handler);
 
     if (t_argc < 3) {
         throw std::runtime_error("Expected arguments: path_to_instance method [with_heuristics] [smoothing_factor] [farkas_pricing] [branching_on_master]");
