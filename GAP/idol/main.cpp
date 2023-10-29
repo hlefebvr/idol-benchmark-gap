@@ -180,7 +180,7 @@ int main(int t_argc, const char** t_argv) {
                     .conditional(with_heuristics, [](auto& x){
                         x.with_callback(
                                 Heuristics::IntegerMaster()
-                                    .with_optimizer(OPTIMIZER().with_log_level(Info).with_presolve(false))
+                                    .with_optimizer(OPTIMIZER().with_presolve(false))
                             );
                     })
                     .with_subtree_depth(0)
