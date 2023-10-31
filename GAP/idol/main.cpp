@@ -1,20 +1,10 @@
 #include <iostream>
 
 #include <idol/modeling.h>
-#include <idol/optimizers/wrappers/HiGHS/HiGHS.h>
-#include <idol/optimizers/wrappers/GLPK/GLPK.h>
-#include <idol/optimizers/wrappers/Gurobi/Gurobi.h>
-#include <idol/optimizers/wrappers/Mosek/Mosek.h>
+#include <idol/solvers.h>
 #include <idol/problems/generalized-assignment-problem/GAP_Instance.h>
-#include "write_to_file.h"
-#include <idol/optimizers/branch-and-bound/node-selection-rules/factories/BestBound.h>
-#include <idol/optimizers/branch-and-bound/branching-rules/factories/MostInfeasible.h>
-#include <idol/optimizers/branch-and-bound/branching-rules/factories/LeastInfeasible.h>
-#include <idol/optimizers/dantzig-wolfe/DantzigWolfeDecomposition.h>
 #include <idol/optimizers/dantzig-wolfe/Optimizers_DantzigWolfeDecomposition.h>
-#include <idol/optimizers/column-generation/IntegerMaster.h>
-#include <idol/optimizers/callbacks/RENS.h>
-#include <idol/optimizers/callbacks/LocalBranching.h>
+#include "write_to_file.h"
 
 #define OPTIMIZER HiGHS
 
@@ -25,6 +15,8 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <idol/optimizers/branch-and-bound/BranchAndBound.h>
+#include <idol/optimizers/callbacks/RENS.h>
+#include <idol/optimizers/column-generation/IntegerMaster.h>
 
 using namespace idol;
 
@@ -126,26 +118,26 @@ int main(int t_argc, const char** t_argv) {
 
         model.use(
                 BranchAndBound()
-                    .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
-                    .with_branching_rule(MostInfeasible())
-                    .with_node_selection_rule(BestBound())
-                    .with_time_limit(time_limit)
-                    .with_subtree_depth(0)
-                    .with_log_frequency(1)
-                    .with_log_level(Info, Blue)
-                    .conditional(with_heuristics, [](auto& x) {
-                        x.with_callback(
-                                Heuristics::RENS()
-                                    .with_optimizer(
-                                        BranchAndBound()
-                                                .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
-                                                .with_branching_rule(MostInfeasible())
-                                                .with_node_selection_rule(BestBound())
-                                                .with_time_limit(time_limit)
-                                    )
-                        );
-                    })
-            );
+                        .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
+                        .with_branching_rule(MostInfeasible())
+                        .with_node_selection_rule(BestBound())
+                        .with_time_limit(time_limit)
+                        .with_subtree_depth(0)
+                        .with_log_frequency(1)
+                        .with_log_level(Info, Blue)
+                        .conditional(with_heuristics, [](auto& x) {
+                            x.with_callback(
+                                    Heuristics::RENS()
+                                            .with_optimizer(
+                                                    BranchAndBound()
+                                                            .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
+                                                            .with_branching_rule(MostInfeasible())
+                                                            .with_node_selection_rule(BestBound())
+                                                            .with_time_limit(time_limit)
+                                            )
+                            );
+                        })
+        );
 
     } else if (method == "bap") {
 
@@ -162,31 +154,34 @@ int main(int t_argc, const char** t_argv) {
 
         model.use(
                 BranchAndBound()
-                    .with_node_optimizer(
-                        DantzigWolfeDecomposition(decomposition)
-                            .with_master_optimizer(OPTIMIZER::ContinuousRelaxation().with_infeasible_or_unbounded_info(true))
-                            .with_pricing_optimizer(OPTIMIZER())
-                            .with_dual_price_smoothing_stabilization(smoothing_factor)
-                            .with_branching_on_master(branching_on_master)
-                            .with_column_pool_clean_up(clean_up, .75)
-                            .with_farkas_pricing(with_farkas_pricing)
-                            .with_max_columns_per_pricing(1)
-                            .with_log_level(Mute, Yellow)
-                            .with_log_frequency(1)
-                    )
-                    .with_branching_rule(MostInfeasible())
-                    .with_node_selection_rule(BestBound())
-                    .with_time_limit(time_limit)
-                    .conditional(with_heuristics, [](auto& x){
-                        x.with_callback(
-                                Heuristics::IntegerMaster()
-                                    .with_optimizer(OPTIMIZER().with_presolve(false))
+                        .with_node_optimizer(
+                                DantzigWolfeDecomposition(decomposition)
+                                        .with_master_optimizer(OPTIMIZER::ContinuousRelaxation())
+                                        .with_default_sub_problem_spec(
+                                                DantzigWolfe::SubProblem()
+                                                        .add_optimizer(OPTIMIZER())
+                                        )
+                                        .with_dual_price_smoothing_stabilization(DantzigWolfe::Neame(smoothing_factor))
+                                        .with_hard_branching(branching_on_master)
+                                        //.with_column_pool_clean_up(clean_up, .75)
+                                        .with_infeasibility_strategy(DantzigWolfe::FarkasPricing())
+                                        .with_max_parallel_sub_problems(1)
+                                        .with_log_level(Mute, Yellow)
+                                        // .with_log_frequency(1)
+                        )
+                        .with_branching_rule(MostInfeasible())
+                        .with_node_selection_rule(BestBound())
+                        .with_time_limit(time_limit)
+                        .conditional(with_heuristics, [](auto& x){
+                            x.add_callback(
+                                    Heuristics::IntegerMaster()
+                                            .with_optimizer(OPTIMIZER().with_presolve(false))
                             );
-                    })
-                    .with_subtree_depth(0)
-                    .with_log_frequency(1)
-                    .with_log_level(Info, Blue)
-            );
+                        })
+                        .with_subtree_depth(0)
+                        .with_log_frequency(1)
+                        .with_log_level(Trace, Blue)
+        );
 
     } else {
 
@@ -218,11 +213,11 @@ int main(int t_argc, const char** t_argv) {
         const double total_time = model.optimizer().time().count();
         const double bab_time = branch_and_bound.time().count();
         const double cg_time = branch_and_bound.relaxation().optimizer().time().cumulative_count();
-        const double master_time = dantzig_wolfe.master().optimizer().time().cumulative_count();
+        const double master_time = dantzig_wolfe.formulation().master().optimizer().time().cumulative_count();
         double sp_time = 0.;
 
-        for (auto &sp: dantzig_wolfe.subproblems()) {
-            sp_time += sp.model().optimizer().time().cumulative_count();
+        for (auto &sp: dantzig_wolfe.formulation().sub_problems()) {
+            sp_time += sp.optimizer().time().cumulative_count();
         }
 
         std::cout << "Total: " << total_time << std::endl;
