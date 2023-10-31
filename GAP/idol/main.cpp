@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <idol/optimizers/branch-and-bound/BranchAndBound.h>
 #include <idol/optimizers/callbacks/RENS.h>
-#include <idol/optimizers/column-generation/IntegerMaster.h>
+#include <idol/optimizers/callbacks/IntegerMaster.h>
 
 using namespace idol;
 
