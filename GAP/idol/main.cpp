@@ -160,10 +160,10 @@ int main(int t_argc, const char** t_argv) {
                                         .with_default_sub_problem_spec(
                                                 DantzigWolfe::SubProblem()
                                                         .add_optimizer(OPTIMIZER())
+                                                        .with_column_pool_clean_up(clean_up, .75)
                                         )
                                         .with_dual_price_smoothing_stabilization(DantzigWolfe::Neame(smoothing_factor))
                                         .with_hard_branching(!branching_on_master)
-                                        //.with_column_pool_clean_up(clean_up, .75)
                                         .with_infeasibility_strategy(DantzigWolfe::FarkasPricing())
                                         .with_max_parallel_sub_problems(1)
                                         .with_log_level(Mute, Yellow)
@@ -175,12 +175,12 @@ int main(int t_argc, const char** t_argv) {
                         .conditional(with_heuristics, [](auto& x){
                             x.add_callback(
                                     Heuristics::IntegerMaster()
-                                            .with_optimizer(OPTIMIZER().with_presolve(false))
+                                            .with_optimizer(OPTIMIZER().with_presolve(false).with_time_limit(5))
                             );
                         })
                         .with_subtree_depth(0)
                         .with_log_frequency(1)
-                        .with_log_level(Trace, Blue)
+                        .with_log_level(Info, Blue)
         );
 
     } else {
