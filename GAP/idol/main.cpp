@@ -162,7 +162,7 @@ int main(int t_argc, const char** t_argv) {
                                                         .add_optimizer(OPTIMIZER())
                                         )
                                         .with_dual_price_smoothing_stabilization(DantzigWolfe::Neame(smoothing_factor))
-                                        .with_hard_branching(branching_on_master)
+                                        .with_hard_branching(!branching_on_master)
                                         //.with_column_pool_clean_up(clean_up, .75)
                                         .with_infeasibility_strategy(DantzigWolfe::FarkasPricing())
                                         .with_max_parallel_sub_problems(1)

@@ -1,18 +1,18 @@
 #!/bin/bash
 
 ARGS=(
-  "external"
+  #"external"
   #"bab true"
-  "bab false"
-  #"bap true 0 false true"
+  #"bab false"
+  "bap true 0 false true"
   #"bap true 0 false false"
   #"bap true 0 true true"
   #"bap true .3 true true"
 )
 
 FOLDERS=(
-  "n4"
-  #"n3"
+  #"n4"
+  "n3"
   #"n2"
 )
 
