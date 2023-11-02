@@ -175,7 +175,7 @@ int main(int t_argc, const char** t_argv) {
                         .conditional(with_heuristics, [](auto& x){
                             x.add_callback(
                                     Heuristics::IntegerMaster()
-                                            .with_optimizer(OPTIMIZER().with_presolve(false).with_time_limit(5))
+                                            .with_optimizer(OPTIMIZER())
                             );
                         })
                         .with_subtree_depth(0)
