@@ -4,6 +4,7 @@
 #include <idol/solvers.h>
 #include <idol/problems/generalized-assignment-problem/GAP_Instance.h>
 #include <idol/optimizers/dantzig-wolfe/Optimizers_DantzigWolfeDecomposition.h>
+#include <idol/optimizers/dantzig-wolfe/infeasibility-strategies/ArtificialCosts.h>
 #include "write_to_file.h"
 
 #define OPTIMIZER HiGHS
@@ -152,6 +153,11 @@ int main(int t_argc, const char** t_argv) {
         branching_on_master = parse_bool(t_argv[6]);
         clean_up = 1500;
 
+        std::unique_ptr<DantzigWolfe::InfeasibilityStrategyFactory> infeasibility_strategy(with_farkas_pricing ?
+               (DantzigWolfe::InfeasibilityStrategyFactory*) new DantzigWolfe::FarkasPricing() :
+               (DantzigWolfe::InfeasibilityStrategyFactory*) new DantzigWolfe::ArtificialCosts()
+        );
+
         model.use(
                 BranchAndBound()
                         .with_node_optimizer(
@@ -161,10 +167,11 @@ int main(int t_argc, const char** t_argv) {
                                                 DantzigWolfe::SubProblem()
                                                         .add_optimizer(OPTIMIZER())
                                                         .with_column_pool_clean_up(clean_up, .75)
+                                                        .with_max_column_per_pricing(10)
                                         )
                                         .with_dual_price_smoothing_stabilization(DantzigWolfe::Neame(smoothing_factor))
                                         .with_hard_branching(!branching_on_master)
-                                        .with_infeasibility_strategy(DantzigWolfe::FarkasPricing())
+                                        .with_infeasibility_strategy(*infeasibility_strategy)
                                         .with_max_parallel_sub_problems(1)
                                         .with_log_level(Mute, Yellow)
                                         // .with_log_frequency(1)
