@@ -73,7 +73,7 @@ function make_model(instance::Instance, time_limit::Int)
                 ),
                 timelimit = time_limit,
                 explorestrategy = Coluna.TreeSearch.BestDualBoundStrategy(),
-                opt_atol = 1e-10,
+                opt_atol = 1e-5,
                 opt_rtol = 1e-4
             )
         ),
