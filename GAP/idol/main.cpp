@@ -218,7 +218,7 @@ int main(int t_argc, const char** t_argv) {
 
     if (method == "bap") {
 
-        const auto &branch_and_bound = model.optimizer().as<Optimizers::BranchAndBound<NodeVarInfo>>();
+        const auto &branch_and_bound = model.optimizer().as<Optimizers::BranchAndBound<DefaultNodeInfo>>();
         const auto &dantzig_wolfe = branch_and_bound.relaxation().optimizer().as<Optimizers::DantzigWolfeDecomposition>();
 
         const double total_time = model.optimizer().time().count();
