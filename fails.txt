@@ -1,0 +1,6 @@
+./GAP/data/n4/instance_n4_80__1.txt bap true .3 true true  -> Cannot save dual ray
+./GAP/data/n3/instance_n3_30__14.txt bap true 0 false true -> Conflicts
+./GAP/data/n3/instance_n3_40__0.txt bap true 0 false true -> Conflicts
+./GAP/data/n3/instance_n3_40__18.txt bap true 0 false true -> Conflicts
+./GAP/data/n3/instance_n3_40__18.txt bap true 0 false false -> Conflicts
+

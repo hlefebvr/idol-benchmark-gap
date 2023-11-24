@@ -16,8 +16,9 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <idol/optimizers/branch-and-bound/BranchAndBound.h>
-#include <idol/optimizers/callbacks/RENS.h>
-#include <idol/optimizers/callbacks/IntegerMaster.h>
+#include <idol/optimizers/callbacks/heuristics/RENS.h>
+#include <idol/optimizers/callbacks/heuristics/IntegerMaster.h>
+#include <idol/optimizers/callbacks/cutting-planes/KnapsackCover.h>
 
 using namespace idol;
 
@@ -122,18 +123,19 @@ int main(int t_argc, const char** t_argv) {
                         .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
                         .with_branching_rule(MostInfeasible())
                         .with_node_selection_rule(BestBound())
+                        .add_callback(Cuts::KnapsackCover())
                         .with_time_limit(time_limit)
                         .with_subtree_depth(0)
-                        .with_log_frequency(1)
-                        .with_log_level(Info, Blue)
+                        .with_logs(true)
                         .conditional(with_heuristics, [](auto& x) {
-                            x.with_callback(
+                            x.add_callback(
                                     Heuristics::RENS()
                                             .with_optimizer(
                                                     BranchAndBound()
                                                             .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
                                                             .with_branching_rule(MostInfeasible())
                                                             .with_node_selection_rule(BestBound())
+                                                            .add_callback(Cuts::KnapsackCover())
                                                             .with_time_limit(time_limit)
                                             )
                             );
@@ -162,10 +164,10 @@ int main(int t_argc, const char** t_argv) {
                 BranchAndBound()
                         .with_node_optimizer(
                                 DantzigWolfeDecomposition(decomposition)
-                                        .with_master_optimizer(OPTIMIZER::ContinuousRelaxation())
+                                        .with_master_optimizer(OPTIMIZER::ContinuousRelaxation().with_logs(false))
                                         .with_default_sub_problem_spec(
                                                 DantzigWolfe::SubProblem()
-                                                        .add_optimizer(OPTIMIZER())
+                                                        .add_optimizer(OPTIMIZER().with_logs(false))
                                                         .with_column_pool_clean_up(clean_up, .75)
                                                         .with_max_column_per_pricing(10)
                                         )
@@ -173,7 +175,7 @@ int main(int t_argc, const char** t_argv) {
                                         .with_hard_branching(!branching_on_master)
                                         .with_infeasibility_strategy(*infeasibility_strategy)
                                         .with_max_parallel_sub_problems(1)
-                                        .with_log_level(Mute, Yellow)
+                                        .with_logs(false)
                                         // .with_log_frequency(1)
                         )
                         .with_branching_rule(MostInfeasible())
@@ -183,15 +185,14 @@ int main(int t_argc, const char** t_argv) {
                             x.add_callback(
                                     Heuristics::IntegerMaster()
                                             .with_optimizer(
-                                                OPTIMIZER()
+                                                OPTIMIZER().with_logs(false)
                                                     .with_presolve(false)
                                                     .with_time_limit(10)
                                             )
                             );
                         })
                         .with_subtree_depth(0)
-                        .with_log_frequency(1)
-                        .with_log_level(Info, Blue)
+                        .with_logs(true)
         );
 
     } else {
