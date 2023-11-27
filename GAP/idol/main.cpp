@@ -132,11 +132,12 @@ int main(int t_argc, const char** t_argv) {
                                     Heuristics::RENS()
                                             .with_optimizer(
                                                     BranchAndBound()
-                                                            .with_node_optimizer(OPTIMIZER::ContinuousRelaxation())
+                                                            .with_node_optimizer(OPTIMIZER::ContinuousRelaxation().with_logs(false))
                                                             .with_branching_rule(MostInfeasible())
                                                             .with_node_selection_rule(BestBound())
                                                             .add_callback(Cuts::KnapsackCover())
                                                             .with_time_limit(time_limit)
+                                                            .with_logs(false)
                                             )
                             );
                         })
