@@ -36,7 +36,7 @@ jobs:
     - name: Update apt-get
       run: sudo apt-get update
 
-    - uses: julia-actions/setup-julia@1.8.1
+    - uses: julia-actions/setup-julia@v1.8.1
 
     - name: Install JuMP, Coluna.jl and MosekTools.jl
       run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("HiGHS"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
