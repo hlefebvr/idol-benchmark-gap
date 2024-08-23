@@ -3,8 +3,8 @@
 #include <idol/modeling.h>
 #include <idol/solvers.h>
 #include <idol/problems/generalized-assignment-problem/GAP_Instance.h>
-#include <idol/optimizers/dantzig-wolfe/Optimizers_DantzigWolfeDecomposition.h>
-#include <idol/optimizers/dantzig-wolfe/infeasibility-strategies/ArtificialCosts.h>
+#include <idol/optimizers/mixed-integer-optimization/dantzig-wolfe/Optimizers_DantzigWolfeDecomposition.h>
+#include <idol/optimizers/mixed-integer-optimization/dantzig-wolfe/infeasibility-strategies/ArtificialCosts.h>
 #include "write_to_file.h"
 
 #define OPTIMIZER GLPK
@@ -15,10 +15,10 @@
 #include <csignal>
 #include <cstdlib>
 #include <unistd.h>
-#include <idol/optimizers/branch-and-bound/BranchAndBound.h>
-#include <idol/optimizers/callbacks/heuristics/RENS.h>
-#include <idol/optimizers/callbacks/heuristics/IntegerMaster.h>
-#include <idol/optimizers/callbacks/cutting-planes/KnapsackCover.h>
+#include <idol/optimizers/mixed-integer-optimization/branch-and-bound/BranchAndBound.h>
+#include <idol/optimizers/mixed-integer-optimization/callbacks/heuristics/RENS.h>
+#include <idol/optimizers/mixed-integer-optimization/callbacks/heuristics/IntegerMaster.h>
+#include <idol/optimizers/mixed-integer-optimization/callbacks/cutting-planes/KnapsackCover.h>
 
 using namespace idol;
 
