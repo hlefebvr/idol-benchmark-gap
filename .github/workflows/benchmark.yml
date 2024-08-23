@@ -41,7 +41,7 @@ jobs:
         version: '1.8.5'
 
     - name: Install JuMP, Coluna.jl and MosekTools.jl
-      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("HiGHS"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
+      run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
       # run: julia -e 'using Pkg; Pkg.add("JuMP"); Pkg.add("BlockDecomposition"); Pkg.add("MosekTools"); Pkg.add("GLPK"); Pkg.add("Coluna"); Pkg.add("DelimitedFiles")'
 
     - name: Solve instances with Coluna.jl
