@@ -7,7 +7,7 @@
 #include <idol/optimizers/dantzig-wolfe/infeasibility-strategies/ArtificialCosts.h>
 #include "write_to_file.h"
 
-#define OPTIMIZER HiGHS
+#define OPTIMIZER GLPK
 
 ///////////////////////////
 #include <cstdio>

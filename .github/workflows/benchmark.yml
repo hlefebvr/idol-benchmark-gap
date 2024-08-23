@@ -81,17 +81,20 @@ jobs:
     - name: Update apt-get
       run: sudo apt-get update
 
-    - name: Download HiGHS
-      run: git clone https://github.com/ERGO-Code/HiGHS.git
+    #- name: Download HiGHS
+      #  run: git clone https://github.com/ERGO-Code/HiGHS.git
 
-    - name: Install HiGHS
-      run: mkdir HiGHS/build && cd HiGHS/build && cmake .. && make && sudo make install
+    #- name: Install HiGHS
+    #  run: mkdir HiGHS/build && cd HiGHS/build && cmake .. && make && sudo make install
+
+    - name: Install GLPK
+      run: sudo apt-get install libglpk-dev
 
     - name: Download robin_hood map
       run: wget https://raw.githubusercontent.com/martinus/robin-hood-hashing/3.11.5/src/include/robin_hood.h
 
     - name: Install idol
-      run: git clone --branch dev https://github.com/hlefebvr/idol.git && cd idol && cmake -DUSE_HIGHS=YES -DUSE_ROBINHOOD=YES -DROBINHOOD_DIR=${{github.workspace}} . && make && sudo make install
+      run: git clone --branch main https://github.com/hlefebvr/idol.git && cd idol && cmake -DUSE_GLPK=YES -DUSE_ROBINHOOD=YES -DROBINHOOD_DIR=${{github.workspace}} . && make && sudo make install
 
     #- name: Download Eigen
       #  run: wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
