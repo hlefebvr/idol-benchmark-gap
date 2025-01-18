@@ -1,0 +1,585 @@
+---
+title: Generalized Assignment Problem
+output:
+  rmdformats::readthedown:
+    toc: 3
+---
+
+## About
+
+This page contains an automatic benchmark between the C++ library [idol](https://github.com/hlefebvr/idol) and the Julia package [Coluna.jl](https://github.com/atoptima/Coluna.jl)
+to test their implementation of the [Branch-and-Price algorithm](https://en.wikipedia.org/wiki/Branch_and_price) for solving instances of the [Generalized Assignment Problem](https://en.wikipedia.org/wiki/Generalized_assignment_problem).
+
+The results presented here are automatically generated using GitHub Actions and R with Rmarkdown. Note that the experiments themselves are run with GitHub Actions for which the code
+is fully public and can be found [here for implementation details](https://github.com/hlefebvr/idol_benchmark) and [here for GitHub Actions configuration](https://github.com/hlefebvr/idol_benchmark/blob/main/.github/workflows/benchmark.yml).
+
+The experiments were conducted on a free GitHub-hosted runner with an `ubuntu-latest` virtual machine with two CPU cores (x86_64), 7 GB of RAM and 14 GB of SSD space (see [hardware specifications here](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners)).
+
+Last automatic run: `r format(Sys.time(), '%d/%m/%y %H:%M:%S')`.
+
+```{r echo = FALSE}
+library(rmarkdown)
+suppressMessages(library(dplyr))
+library(ggplot2)
+
+knitr::opts_chunk$set(
+  out.width = "100%"
+)
+
+```
+
+## Mathematical models
+
+### Direct model
+
+Let $m$ be the number of agents and let $n$ be the number of tasks to be performed. 
+
+Let $c_{ij}$ be the cost of assigning task $j$ to agent $i$, $w_{ij}$ be the resource consumption of task $j$ when performed by agent $i$ and let $t_i$ be the resource capacity of agent $i$. 
+
+The Generalized Assignment Problem (GAP) can be modeled as
+
+$$
+  \begin{array}{lll}
+    \min \ & \displaystyle \sum_{i=1}^m \sum_{j=1}^n c_{ij} x_{ij} \\
+    \textrm{s.t.} \ & \displaystyle \sum_{j=1}^n w_{ij}x_{ij} \le t_{i} & i=1,...,m \\
+    & \displaystyle \sum_{i=1}^m x_{ij} = 1 & j = 1,...,n \\
+    & x_{ij} \in \{ 0,1 \}.
+  \end{array}
+$$
+Here, variable $x_{ij}$ equals $1$ if, and only if, task $j$ is assigned to agent $i$.
+
+### Dantzig-Wolfe reformulation
+
+Let us enumerate the list of all feasible assignments, i.e., let $\{ \bar{\mathrm{x}}_{ij}^e \}_{e\in E} = \{ x\in\{ 0, 1 \}^{mn} | \sum_{j=1}^n w_{ij}x_{ij} \le t_i \quad i = 1,...,m \}$ where $E$ denotes a list for their indices. The [Dantzig-Wolfe reformulation](https://en.wikipedia.org/wiki/Dantzig%E2%80%93Wolfe_decomposition) of GAP reads
+
+$$
+  \begin{array}{lll}
+    \min \ & \displaystyle \sum_{e\in E} \alpha_e \left( \sum_{i=1}^m\sum_{j=1}^n c_{ij}\bar{\mathrm{x}}_{ij}^e \right) \\
+    \textrm{s.t.} \ & \displaystyle \sum_{i=1}^m \alpha_e\bar{\mathrm{x}}_{ij}^e = 1 & j=1,...,n \\
+    & \displaystyle \sum_{e\in E} \alpha_e = 1 \\
+    & \alpha_e \ge 0
+  \end{array}
+$$
+
+Though this model contains an exponential number of variables (i.e., columns) it can still be solved efficiently using [Column Generation](https://en.wikipedia.org/wiki/Column_generation) and [Branch and price](https://en.wikipedia.org/wiki/Branch_and_price). 
+
+In such a case, the pricing problem is a [Knapsack Problem](https://en.wikipedia.org/wiki/Knapsack_problem).
+
+## Reading instances
+
+In this section, we start by reading the raw computational results stored in CSV files. Note that these CSV files is stored as an *artifact* on the [GitHub Actions of the hlefebvr/idol_benchmark repository](https://github.com/hlefebvr/idol_benchmark/actions) and can be downloaded without restrictions by clicking on the latest workflow execution named `new_workflow` under the section "Artifacts" (also note that artifacts have a life span of 90 days).
+
+
+```{r}
+time_limit = 5 * 60
+```
+
+
+### Results obtained with idol
+
+We first start to read results obtained using idol, which can be found inside the `results_GAP_idol.csv` file (Note that this file can be obtained by running `cat results_GAP_idol__*.csv > results_GAP_idol.csv` after having extracted the `.zip` the artifact).
+
+```{r}
+idol = read.csv("../results_GAP_idol.csv", header = FALSE)
+colnames(idol) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "reason", "objective_value", "time")
+```
+
+Since the "external" approach (as well as the "idol_bab" approach) do not have relevant parameter values for "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold" and "branching_on_master", we set these values to `NA`.
+
+```{r}
+idol[idol$solver == "external",]$with_heuristics = NA
+idol[idol$solver == "external" | idol$solver == "idol_bab",]$smoothing_factor = NA
+idol[idol$solver == "external" | idol$solver == "idol_bab",]$farkas_pricing = NA
+idol[idol$solver == "external" | idol$solver == "idol_bab",]$clean_up_threshold = NA
+idol[idol$solver == "external" | idol$solver == "idol_bab",]$branching_on_master = NA
+```
+
+Then, we concatenate the parameter values with the method's name to obtain a unique identifier for each tested method. The unique identifier can be `external`, `idol_bab_h<A>` or `idol_bap_h<A>_s<B>_f<C>_c<D>_m<E>` where
+
+- `<A>` is 1 if the algorithm uses primal heuristics, 0 otherwise ; 
+- `<B>` is the smoothing factor (when relevant) multiplied by 100 ;
+- `<C>` is 1 if Farkas pricing was used, 0 if artificial variables were used ;
+- `<D>` is the clean up threshold which was used (when the threshold is reached, up to 1/3 of the threshold columns are removed from the pool) ;
+- `<E>` is 1 branching was applied to the master problem and 0 otherwise.
+
+```{r}
+idol$solver_with_params = paste0(idol$solver, "_h", idol$with_heuristics, "_s", idol$smoothing_factor * 100, "_f", idol$farkas_pricing, "_c", idol$clean_up, "_m", idol$branching_on_master)
+idol[idol$solver == "external",]$solver_with_params = "external"
+idol[idol$solver == "idol_bab",]$solver_with_params = paste0("idol_bab_h", idol[idol$solver == "idol_bab",]$with_heuristics)
+```
+
+```{r}
+idol =  idol %>%
+  mutate(status = trimws(status))
+
+if (sum(idol$reason == "TimeLimit") > 0) {
+  idol[idol$reason == "TimeLimit",]$time = time_limit
+}
+
+if (sum(idol$status == "Fail") > 0) {
+  idol[idol$status == "Fail",]$time = time_limit
+}
+```
+
+### Results obtained with Coluna.jl
+
+The results obtained using Coluna.jl can be found inside `results_GAP_coluna.csv`.
+
+```{r}
+coluna =  read.csv("../results_GAP_coluna.csv", header = FALSE)
+colnames(coluna) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "status", "objective_value", "time")
+coluna$solver_with_params = "Coluna.jl"
+coluna$reason = NA
+
+if (sum(coluna$status == "ERROR") > 0) {
+  coluna[coluna$status == "ERROR",]$time = time_limit 
+}
+
+if (sum(coluna$status == "TIME_LIMIT") > 0) {
+  coluna[coluna$status == "TIME_LIMIT",]$time = time_limit
+}
+
+if (sum(coluna$status == "INFEASIBLE") > 0) {
+  coluna[coluna$status == "INFEASIBLE",]$objective_value = 1e+20
+}
+
+```
+
+### All
+
+We can now combine and print out the obtained computational results for each instance for each solver.
+
+```{r}
+results = rbind(idol, coluna)
+
+results = results %>%
+  mutate(
+    n_agents = as.integer(sub('.*instance_n(\\d+)_\\d+__\\d+\\.txt', '\\1', instance)),
+    n_jobs = as.integer(sub('.*instance_n\\d+_(\\d+)__\\d+\\.txt', '\\1', instance))
+  )
+
+results$unsolved = results$time >= time_limit | results$status == "ERROR" | results$status == "Fail"
+
+if (sum(results$time > time_limit) > 0) {
+  results[results$time > time_limit,]$time = time_limit
+}
+```
+
+
+```{r echo = FALSE}
+paged_table(results)
+```
+
+The list of all tested configuration of solvers can be obtained as follows.
+
+```{r}
+solvers = as.data.frame(unique(results$solver_with_params))
+solvers = as.data.frame(sort(solvers[,1], decreasing = TRUE))
+colnames(solvers) = "Solver"
+```
+
+```{r echo = FALSE}
+knitr::kable(solvers)
+```
+
+## Checking results
+
+In this section, we first make sure that every solver reports the same optimal objective value for solved instances. We thus introduce function `compare_results` which takes as input a set of results and two solver names for which the results should be compared. The function returns the list of instances which for which the two methods report different objective values (with a tolerance of $10^{-3}$).
+
+```{r}
+compare_results = function (dataset, solver_a, solver_b) {
+  
+  results_a = dataset[dataset$solver_with_params == solver_a & dataset$time < time_limit & !(dataset$status %in% c("ERROR", "Fail")),]
+  results_b = dataset[dataset$solver_with_params == solver_b & dataset$time < time_limit & !(dataset$status %in% c("ERROR", "Fail")),]
+  
+  merged = merge(results_a, results_b, by = c("instance"))
+  
+  return ( merged[ abs(merged$objective_value.x - merged$objective_value.y) > 1e-2 ,] )
+}
+```
+
+Then, we compare all solvers together.
+
+```{r}
+mismatches = data.frame()
+
+for (solver_with_params in unique(results$solver_with_params)) {
+  mismatch = compare_results(results, "external", solver_with_params)
+  if (nrow(mismatch) > 0) {
+    print(paste0("There was mismatched instances between external solver and ", solver_with_params))
+    mismatch = mismatch[,c("instance", "solver_with_params.x", "solver_with_params.y", "status.x", "status.y", "time.x", "time.y", "objective_value.x", "objective_value.y")]
+    rownames(mismatch) = NULL
+    mismatches = rbind(mismatches, mismatch)
+  }
+}
+
+paged_table(mismatches)
+```
+
+## Some helper functions
+
+### Performance profiles
+
+To compare the different methods, we use performance profiles; see Dolan et al. (2002). 
+
+First, we associate colors to each solvers. Each solver will keep its color throughout the document.
+
+```{r}
+# Define color palette
+colors <- scales::hue_pal()(length(unique(results$solver_with_params)))
+
+# Define a mapping solver_with_params[i] -> color[i]
+color_mapping = setNames(colors[1:length(solvers$Solver)], solvers$Solver)
+```
+
+Then, we introduce the function "add_performance_ratio" which augments a given data set with the performance of each solver with respect to the best solver.
+
+```{r}
+add_performance_ratio = function(dataset, 
+                                 criterion_column = "total_time",
+                                 unsolved_column = "unsolved",
+                                 instance_column = "instance",
+                                 solver_column = "solver",
+                                 output_column = "performance_ratio") {
+  
+  # Compute best score for each instance
+  best = dataset %>%
+    group_by(!!sym(instance_column)) %>%
+    mutate(best_solver = min(!!sym(criterion_column)))
+  
+  # Compute performance ratio for each instance and solver
+  result = best %>%
+    group_by(!!sym(instance_column), !!sym(solver_column)) %>%
+    mutate(!!sym(output_column) := !!sym(criterion_column) / best_solver) %>%
+    ungroup()
+  
+  if (sum(result[,unsolved_column]) > 0) {
+    result[result[,unsolved_column] == TRUE,output_column] = max(result[,output_column])
+  }
+
+  return (result)
+}
+
+plot_performance_profile = function(dataset,
+                                    criterion_column,
+                                    unsolved_column = "unsolved",
+                                    instance_column = "instance",
+                                    solver_column = "solver"
+                                    ) {
+  
+  dataset_with_performance_ratios = add_performance_ratio(dataset,
+                                                          criterion_column = criterion_column,
+                                                          instance_column = instance_column,
+                                                          solver_column = solver_column,
+                                                          unsolved_column = unsolved_column)
+  
+  solved_dataset_with_performance_ratios = dataset_with_performance_ratios[!dataset_with_performance_ratios[,unsolved_column],]
+  
+  compute_performance_profile_point = function(method, data) {
+    
+    performance_ratios = solved_dataset_with_performance_ratios[solved_dataset_with_performance_ratios[,solver_column] == method,]$performance_ratio
+    
+    unscaled_performance_profile_point = ecdf(performance_ratios)(data)
+    
+    n_instances = sum(dataset[,solver_column] == method)
+    n_solved_instances = sum(dataset[,solver_column] == method & !dataset[,unsolved_column])
+    
+    return( unscaled_performance_profile_point * n_solved_instances / n_instances )
+  }
+  
+  perf = solved_dataset_with_performance_ratios %>%
+    group_by(!!sym(solver_column)) %>%
+    mutate(performance_profile_point = compute_performance_profile_point(unique(!!sym(solver_column)), performance_ratio))
+  
+  result = ggplot(data = perf, aes(x = performance_ratio, y = performance_profile_point, color = !!sym(solver_column))) +
+              geom_line()
+  
+  return (result)
+}
+
+```
+
+Here is an example.
+
+```{r}
+plot_performance_profile(results,
+                         criterion_column = "time",
+                         solver_column = "solver_with_params") +
+  labs(x = "Performance ratio", y = "% of instances") +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_minimal()
+```
+
+As a complement, here is the ECDF of computation time.
+
+```{r}
+ggplot(data = results, aes(x = time, color = solver_with_params)) +
+  stat_ecdf(geom = "step") +
+  labs(x = "Total Time", y = "ECDF") +
+  scale_color_manual(values = color_mapping) +
+  theme_minimal()
+```
+
+### Summary tables
+
+We also introduce function `make_table` which builds a summary table from a given dataset where each column is defined as:
+
+- `solver_with_params` the given name of the method ;
+- `n_agents` the number of agents of the considered instances ;
+- `n_jobs` the number of jobs of the considered instances ;
+- `count` the total number of instances which were tried ;
+- `unsolved` the number of instances which could not be solved within the given time limit (i.e., within `r time_limit` seconds) ; 
+- `time` the average computation time (over the solved instances only).
+
+```{r}
+make_table = function (dataset) {
+  
+  group_by = c("solver_with_params", "n_agents", "n_jobs")
+  
+  rownames(dataset) = NULL
+  
+  count = aggregate(dataset$instance, by = dataset[,group_by], FUN = length)
+  colnames(count) = c(group_by, "count")
+  
+  unsolved = aggregate(dataset$time >= time_limit & !(dataset$status %in% c("ERROR", "Fail")), by = dataset[,group_by], FUN = sum)
+  colnames(unsolved) = c(group_by, "unsolved")
+  
+  errors = aggregate(dataset$status %in% c("ERROR", "Fail"), by = dataset[,group_by], FUN = sum)
+  colnames(errors) = c(group_by, "error")
+  
+  solved_filter = dataset$time < time_limit
+  times = aggregate(dataset[solved_filter,]$time, by = dataset[solved_filter,group_by], FUN = mean)
+  colnames(times) = c(group_by, "time")
+  
+  Table = merge(count, unsolved, by = group_by)
+  Table = merge(Table, errors, by = group_by)
+  Table = merge(Table, times, by = group_by)
+
+  return (Table)
+}
+```
+
+For example, the following table gathers results from the external solver.
+
+```{r}
+Table = make_table(results[results$solver == "external",])
+```
+
+```{r echo = FALSE}
+knitr::kable(Table)
+```
+
+## Computational results
+
+### Branch-and-bound algorithm with idol
+
+In this section, we evaluate the computational benefits obtained by idol's primal heuristics.
+
+```{r}
+plot_performance_profile(
+  results[results$solver == "idol_bab",], 
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+) +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Branch-and-bound: with v.s. without heuristics") +
+  theme_minimal()
+```
+
+```{r}
+TableBaB = make_table(results[results$solver == "idol_bab",])
+```
+
+```{r echo = FALSE}
+knitr::kable(TableBaB)
+```
+
+### Branch-and-price
+
+#### Comparing with Coluna.jl
+
+```{r}
+to_save = plot_performance_profile(
+  results[results$solver != "external" & results$solver != "idol_bab",],
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+) +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "idol versus Coluna.jl") +
+  theme_minimal()
+to_save
+ggsave("profile.png", plot = to_save, width = 8, height = 4)
+```
+
+
+```{r}
+Table = make_table(
+  results[results$solver_with_params != "external" & results$solver_with_params != "idol_bab_h0" & results$solver_with_params != "idol_bab_h1",]
+)
+```
+
+```{r echo = FALSE}
+knitr::kable(Table)
+```
+
+We also have a look at pathological instances for idol where the execution time is 20 \% worst than Coluna.jl's time. This is to spot and study why this happens and potentially fix the issue.
+
+```{r}
+find_pathological_instances = function (dataset, solver_a, solver_b) {
+  
+  results_a = dataset[dataset$solver_with_params == solver_a,]
+  results_b = dataset[dataset$solver_with_params == solver_b,]
+  
+  merged = merge(results_a, results_b, by = c("instance"))
+  
+  result = merged[ merged$time.y > 1.2 * merged$time.x , c("instance", "time.x", "time.y", "status.x", "status.y")]
+  
+  colnames(result) = c("instance", paste0(solver_a, ".time"), paste0(solver_b, ".time"), paste0(solver_a, ".status"), paste0(solver_b, ".status"))
+  
+  rownames(result) = NULL
+  
+  return ( result )
+}
+
+pathological_instances = find_pathological_instances(results, "Coluna.jl", "idol_bap_h1_s0_f1_c1500_m1")
+```
+
+```{r}
+knitr::kable(pathological_instances)
+```
+
+#### Comparing different settings of idol
+
+##### All different settings of idol
+
+```{r}
+plot_performance_profile(
+  results[results$solver == "idol_bap",], 
+  criterion_column = "time",
+  solver_column = "solver_with_params") +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "idol") +
+  scale_x_log10() +
+  theme_minimal()
+```
+
+##### Branching strategy: on master v.s. on pricing
+
+Comparing branching scheme (on master or on pricing problem) without smoothing, using artificial variables (phase I) and primal heuristics.
+
+```{r}
+plot_performance_profile(
+  results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$farkas_pricing == 0,], 
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+)  +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Branching strategy: on master v.s. on pricing") +
+  scale_x_log10() +
+  theme_minimal()
+```
+
+##### Handling infeasibility: slack variables v.s. Farkas pricing
+
+Comparing Farkas pricing with artificial variables (phase I) using primal heuristics, master branching and no smoothing.
+
+```{r}
+plot_performance_profile(
+  results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$smoothing_factor == 0 & results$branching_on_master == TRUE,],
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+)  +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Handling Infeasibiliy: slack variables v.s. Farkas pricing") +
+  scale_x_log10() +
+  theme_minimal()
+```
+
+##### Stabilization by smoothing dual values
+
+Comparing smoothing factors with artificial variables, master branching and primal heuristics.
+
+```{r}
+plot_performance_profile(
+  results[results$solver == "idol_bap" & results$with_heuristics == TRUE & results$branching_on_master == TRUE & results$farkas_pricing == TRUE,], 
+  criterion_column = "time",
+  solver_column = "solver_with_params"
+)  +
+  scale_color_manual(values = color_mapping) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Stabilization by smoothing dual values: different values for alpha") +
+  scale_x_log10() +
+  theme_minimal()
+```
+
+
+## Annex results for branch-and-price
+
+### Reading the results
+
+The annex results can be found inside `bap_annex_GAP_coluna.csv`. (Note that this file can be obtained by running `cat bap_annex_GAP_idol__*.csv > bap_annex_GAP_idol.csv` after having extracted the `.zip` the artifact).
+
+```{r}
+annex = read.csv("../bap_annex_GAP_idol.csv", header = FALSE)
+colnames(annex) = c("instance", "solver", "with_heuristics", "smoothing_factor", "farkas_pricing", "clean_up_threshold", "branching_on_master", "total_time", "bab_time", "cg_time", "master_time", "sp_time")
+```
+
+Then, we concatenate the parameter values with the method's name to obtain a unique identifier for each tested method, just like before.
+
+```{r}
+annex$solver_with_params = paste0(annex$solver, "_h", annex$with_heuristics, "_s", annex$smoothing_factor * 100, "_f", annex$farkas_pricing, "_c", annex$clean_up, "_m", annex$branching_on_master)
+```
+
+### All
+
+We can now combine and print out the obtained computational results for each instance for each solver.
+
+```{r}
+annex = annex %>%
+  mutate(
+    n_agents = as.integer(sub('.*instance_n(\\d+)_\\d+__\\d+\\.txt', '\\1', instance)),
+    n_jobs = as.integer(sub('.*instance_n\\d+_(\\d+)__\\d+\\.txt', '\\1', instance))
+  )
+
+
+if (sum(annex$time > time_limit) > 0) {
+  annex[annex$time > time_limit,]$time = time_limit
+}
+
+annex$overhead = annex$total_time - (annex$master_time + annex$sp_time)
+```
+
+```{r, echo = FALSE}
+paged_table(annex)
+```
+
+```{r}
+id_vars = c(
+  "instance", "solver", "with_heuristics", "smoothing_factor",
+  "farkas_pricing", "clean_up_threshold", "branching_on_master",
+  "solver_with_params", "n_agents", "n_jobs"
+)
+
+id_vals = c("total_time", "bab_time", "cg_time", "master_time", "sp_time", "overhead")
+
+annex_long <- reshape(annex, varying = list(id_vals),
+                      direction = "long", idvar = id_vars, timevar = "type", times = id_vals)
+
+rownames(annex_long) = NULL
+colnames(annex_long) = c(id_vars, "type", "value")
+
+paged_table(annex_long)
+```
+
+```{r}
+ggplot(annex_long[annex_long$type %in% c("master_time", "sp_time", "overhead"),], aes(fill=type, y=value, x= n_agents)) + 
+    geom_bar(position="fill", stat="identity")
+```
+
+
